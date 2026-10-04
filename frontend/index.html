@@ -1389,7 +1389,6 @@ async function main() {
   setAllStates('loading', 'Loading');
   initMap(); bindEvents();
   await loadAll();
-  S.scenario.approved = new Set(pendingDevs().map(d => d.id)); S.scenario.mode = S.scenario.approved.size ? 'projected' : 'baseline';
   buildKpis(); recompute(); renderDrawer();
   if (!S.raw.devs && !S.raw.summary) setAllStates('error', 'Data unavailable', 'No pipeline outputs could be loaded from /data. Check the server log.');
   renderAll();
