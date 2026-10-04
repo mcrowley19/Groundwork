@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GroundWorks</title>
+<meta name="description" content="Dublin's planned new homes, set against an estimated water-main network.">
+<link rel="icon" href="assets/groundworks-logo.webp">
+<link rel="preload" as="image" href="assets/dublin-dusk.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS: GroundWorks.
+   Light theme on :root; the photo story uses the dark values.
+   ============================================================ */
+:root {
+  --surface:#ffffff; --surface-stone:#eef0e8; --surface-sunken:#f6f7f2;
+  --line:#dfe2d8; --line-strong:#7b847d;
+  --ink:#111a16; --ink-muted:#5a635d; --on-ink:#ffffff;
+  --glas:#0d6b48; --glas-soft:#dcefe3; --shamrock:#a6df74; --on-shamrock:#111a16; --brand:#7cc8fa; --on-brand:#0b1a24;
+  --or:#a87206; --or-soft:#fbf0d6; --or-ink:#7a5200;
+  --alert:#b93a12; --alert-soft:#fce6dc;
+  --map-land:#f2f3ee; --map-water:#d3e2e1; --map-road:#ffffff; --map-label:#5a635d;
+  --pipe-high:#0b5a3d; --pipe-medium:#2e8a5b; --pipe-low:#538c6d; --pipe-none:#858c86; --pipe-extension:var(--or);
+  --dev-served:var(--glas); --dev-unserved:var(--alert); --link:var(--glas);
+  --shadow-float:0 1px 2px #111a160f, 0 8px 24px -4px #111a161f;
+  --focus-ring:0 0 0 2px #ffffff, 0 0 0 4px #0d6b48;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px; --space-8:32px; --space-12:48px;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:20px; --radius-full:9999px;
+  --font-sans:"DM Sans", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-mono:"DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Story-only tokens */
+  --story-deep:#0e1311; --story-hplate:#f2c230; --story-window-lit:#f1c86c;
+  --story-glass-dark:rgba(14,19,17,.72);
+}
+.dark, [data-theme="dark"] {
+  --surface:#0e1311; --surface-stone:#171e1a; --surface-sunken:#131915;
+  --line:#28312c; --line-strong:#6c766f;
+  --ink:#ecf0eb; --ink-muted:#a1aba4; --on-ink:#0e1311;
+  --glas:#5fc792; --glas-soft:#12382a; --or:#e2ae3c; --or-soft:#382a0b; --or-ink:#f1c86c;
+  --alert:#ff8456; --alert-soft:#3e1a0c;
+  --map-land:#151b18; --map-water:#1b2a2b; --map-road:#222a26; --map-label:#a1aba4;
+  --pipe-high:#79d9a6; --pipe-medium:#46a777; --pipe-low:#3f7f60; --pipe-none:#6e7771;
+  --shadow-float:0 8px 24px -4px #000000b3;
+  --focus-ring:0 0 0 2px #0e1311, 0 0 0 4px #5fc792;
+}
+
+/* ============ Base ============ */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+body { margin:0; font-family:var(--font-sans); font-size:15px; line-height:22px; color:var(--ink); background:var(--surface); -webkit-font-smoothing:antialiased; }
+a { color:var(--link); text-underline-offset:2px; }
+:where(a, button, [tabindex]):focus-visible { outline:2px solid transparent; box-shadow:var(--focus-ring); }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+/* ============ Components (subset of the design system) ============ */
+.btn { display:inline-flex; align-items:center; gap:var(--space-2); height:40px; padding:0 var(--space-4); border-radius:var(--radius-md); font:inherit; font-size:14px; font-weight:500; cursor:pointer; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); text-decoration:none; white-space:nowrap; transition:transform .15s ease, background .15s ease, opacity .15s; }
+.btn:hover { background:var(--surface-sunken); }
+.btn:active { transform:translateY(1px); }
+.btn-primary { background:var(--ink); border-color:var(--ink); color:var(--on-ink); }
+.btn-primary:hover { background:var(--ink); opacity:.88; }
+.btn-lg { height:52px; padding:0 var(--space-6); font-size:16px; }
+.btn svg { flex:none; }
+.btn .arrow { transition:transform .2s ease; }
+.btn:hover .arrow { transform:translateX(3px); }
+.badge { display:inline-flex; align-items:center; gap:4px; height:22px; padding:0 var(--space-2); border-radius:var(--radius-full); font-size:11px; line-height:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; }
+.badge-estimate { background:var(--or-soft); color:var(--or-ink); }
+.chapter p.sample-note { margin-top:var(--space-3); font-size:12px; line-height:16px; }
+.badge-sample { background:var(--surface-stone); color:var(--ink-muted); border:1px solid var(--line); }
+.logo { display:block; height:30px; width:auto; }
+.mark { display:inline-grid; place-items:center; width:28px; height:28px; border-radius:var(--radius-sm); background:var(--glas); color:var(--surface); }
+
+/* ============ Project bar + header ============ */
+.projectbar { display:flex; justify-content:space-between; align-items:center; gap:var(--space-4); padding:6px var(--space-6); background:#111a16; color:#fff; font-size:13px; line-height:18px; position:relative; z-index:31; }
+.projectbar a { color:#fff; }
+.projectbar span { display:inline-flex; align-items:center; gap:var(--space-2); }
+.header { position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:var(--space-8); padding:var(--space-3) var(--space-8); background:rgba(255,255,255,.72); backdrop-filter:blur(14px) saturate(1.3); -webkit-backdrop-filter:blur(14px) saturate(1.3); border-bottom:1px solid rgba(17,26,22,.08); transition:background .4s ease, border-color .4s ease, color .4s ease; }
+.header.dark { background:rgba(14,19,17,.82); border-bottom-color:rgba(255,255,255,.08); }
+.brand { display:inline-flex; align-items:center; gap:var(--space-2); font-size:17px; font-weight:600; letter-spacing:-.01em; color:var(--ink); text-decoration:none; }
+.header nav { display:flex; gap:var(--space-6); margin-left:auto; }
+.header nav a { color:var(--ink); text-decoration:none; font-size:14px; font-weight:500; opacity:.85; }
+.header nav a:hover { opacity:1; text-decoration:underline; }
+
+/* ============ The story stage ============ */
+.story { position:relative; height:900vh; }
+.stage { position:sticky; top:0; height:100vh; height:100svh; overflow:hidden; background:var(--story-deep); isolation:isolate; }
+.scene-wrap { position:absolute; inset:0; transform-origin:62% 55%; will-change:transform, opacity; z-index:1; background:var(--story-deep); }
+#city { position:absolute; inset:0; width:100%; height:100%; z-index:0; opacity:0; }
+.city-bg { position:absolute; inset:-4%; z-index:0; opacity:0; background:url(assets/dublin-dusk.jpg) center/cover; filter:grayscale(.55) brightness(.55) blur(1px); }
+
+/* A "shot" is one photograph with a camera (pan + zoom) and an overlay drawn in the photo's own 1280×720 space. */
+.shot { position:absolute; inset:0; overflow:hidden; opacity:0; visibility:hidden; }
+.cam { position:absolute; left:0; top:0; width:1280px; height:720px; transform-origin:0 0; will-change:transform; }
+.cam > img { position:absolute; inset:0; width:100%; height:100%; display:block; user-select:none; -webkit-user-drag:none; }
+.cam > svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.grade { position:absolute; inset:0; pointer-events:none; }
+.vignette { position:absolute; inset:0; pointer-events:none; z-index:3; background:radial-gradient(120% 90% at 55% 45%, transparent 55%, rgba(8,11,10,.55)); }
+.dip { position:absolute; inset:0; background:#050706; opacity:0; pointer-events:none; }
+
+/* Overlay pieces (SVG, photo coordinates) */
+.ov text { font-family:var(--font-sans); }
+.pill rect { stroke-width:1; }
+.pill text { font-size:16px; font-weight:500; }
+.pill-note text { font-size:16px; font-weight:500; letter-spacing:0; }
+.lead { stroke-width:1.5; fill:none; }
+.ping-ring { fill:none; stroke-width:2.5; transform-box:fill-box; transform-origin:center; animation:pingE 2.2s cubic-bezier(.2,.6,.3,1) infinite; }
+.ping-ring.d2 { animation-delay:1.1s; }
+@keyframes pingE { 0% { transform:scale(.7); opacity:.95; } 100% { transform:scale(1.55); opacity:0; } }
+.probe { stroke:var(--story-hplate); stroke-width:2.5; stroke-dasharray:2 9; stroke-linecap:round; }
+.probe-node { fill:#0e1311; stroke:var(--story-hplate); stroke-width:2.5; }
+.trace { fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.trace-glow { fill:none; stroke-linecap:round; filter:url(#blur8); opacity:.55; }
+.flow { fill:none; stroke:#f4fff8; stroke-width:3; stroke-linecap:round; stroke-dasharray:3 30; opacity:0; transition:opacity .6s; }
+.flow.gold { stroke:#fff3cf; }
+.flow.on { opacity:.9; animation:flow 1.2s linear infinite; }
+@keyframes flow { to { stroke-dashoffset:-33; } }
+.strata { font-size:15px; font-weight:500; fill:rgba(255,255,255,.72); paint-order:stroke; stroke:rgba(0,0,0,.45); stroke-width:3px; }
+.ruler line { stroke:rgba(255,255,255,.4); }
+.ruler text { font:400 13px var(--font-mono); fill:rgba(255,255,255,.7); }
+.lamp-glow { animation:flicker 3.8s steps(1) infinite; mix-blend-mode:screen; }
+@keyframes flicker { 0%,100% { opacity:.85; } 7% { opacity:.6; } 9% { opacity:.9; } 31% { opacity:.75; } 33% { opacity:.95; } 58% { opacity:.7; } 61% { opacity:.88; } 82% { opacity:.65; } 84% { opacity:.92; } }
+.breath { animation:breath 5s ease-in-out infinite; mix-blend-mode:screen; }
+@keyframes breath { 50% { opacity:.55; } }
+.wipe-line { position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, var(--story-window-lit) 20%, #fff6dc 50%, var(--story-window-lit) 80%, transparent); box-shadow:0 0 18px 4px rgba(241,200,108,.55); opacity:0; pointer-events:none; z-index:2; }
+.rain { position:absolute; inset:-20% 0 0; pointer-events:none; opacity:.0; background-image:repeating-linear-gradient(104deg, transparent 0 22px, rgba(255,255,255,.07) 22px 23px, transparent 23px 61px); animation:rain .7s linear infinite; }
+@keyframes rain { to { transform:translate3d(-14px, 60px, 0); } }
+
+/* Floating hydrant plate (chapter 2) */
+.hp { position:absolute; z-index:4; right:clamp(16px, 9vw, 150px); top:50%; width:clamp(120px, 15vw, 210px); margin-top:calc(clamp(120px, 15vw, 210px) * -.62); perspective:900px; opacity:0; pointer-events:none; }
+.hp .plate { position:relative; aspect-ratio:475/543; overflow:hidden; border-radius:7px; box-shadow:0 30px 60px -18px rgba(0,0,0,.8), 0 0 0 1px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.12); transform-style:preserve-3d; will-change:transform; }
+.hp .plate img { position:absolute; width:215.58%; left:-57.9%; top:-44.57%; display:block; }
+.hp-notes { position:absolute; right:calc(100% + 18px); top:0; height:100%; margin:0; padding:0; list-style:none; width:220px; }
+.hp-notes li { position:absolute; right:0; display:flex; align-items:center; gap:10px; font-size:13px; line-height:17px; color:#ecf0eb; text-align:right; opacity:0; white-space:nowrap; }
+.hp-notes li::after { content:""; width:28px; height:1px; background:rgba(242,194,48,.85); }
+.hp-notes b { font-family:var(--font-mono); font-weight:400; color:var(--story-hplate); margin-right:6px; }
+.hp-notes span { padding:5px 10px; border-radius:var(--radius-full); background:rgba(14,19,17,.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+
+/* Chapter cards */
+.chapter { position:absolute; left:clamp(16px, 4vw, 56px); top:50%; width:min(440px, calc(100vw - 32px)); transform:translateY(-50%); pointer-events:none; z-index:5; transition:none; }
+.chapter.on { pointer-events:auto; }
+.chapter .card { opacity:0; }
+.chapter.hero { opacity:0; }
+.card { padding:var(--space-6); border-radius:var(--radius-xl); background:var(--story-glass-dark); backdrop-filter:blur(18px) saturate(1.2); -webkit-backdrop-filter:blur(18px) saturate(1.2); border:1px solid rgba(255,255,255,.08); box-shadow:0 18px 48px -12px #000000b3; color:var(--ink); }
+.chapter h2 { margin:0 0 var(--space-3); font-size:34px; line-height:38px; font-weight:500; letter-spacing:-.02em; }
+.chapter p { margin:0; font-size:15px; line-height:23px; color:var(--ink-muted); }
+.chapter p + p { margin-top:var(--space-3); }
+.chapter strong { color:var(--ink); font-weight:500; }
+.big { font-size:clamp(56px, 7vw, 88px); line-height:1; font-weight:500; letter-spacing:-.035em; font-variant-numeric:tabular-nums; margin:var(--space-2) 0 var(--space-3); }
+.big small { font-size:.36em; letter-spacing:0; color:var(--ink-muted); margin-left:6px; }
+.hplate-chip { display:inline-grid; place-items:center; width:18px; height:22px; border-radius:2px; background:var(--story-hplate); color:#111a16; font:700 12px var(--font-sans); vertical-align:-5px; margin:0 2px; }
+.mini-legend { list-style:none; margin:var(--space-4) 0 0; padding:var(--space-4) 0 0; border-top:1px solid var(--line); display:grid; grid-template-columns:1fr 1fr; gap:6px var(--space-4); font-size:13px; line-height:18px; color:var(--ink); }
+.mini-legend li { display:flex; align-items:center; gap:var(--space-2); }
+.unserved-row { display:flex; align-items:baseline; gap:var(--space-3); margin-top:var(--space-4); padding-top:var(--space-4); border-top:1px solid var(--line); opacity:0; transition:opacity .4s; }
+.unserved-row.on { opacity:1; }
+.unserved-row b { font-size:36px; line-height:40px; font-weight:500; letter-spacing:-.02em; color:var(--alert); font-variant-numeric:tabular-nums; }
+.unserved-row span { font-size:13px; line-height:18px; color:var(--ink-muted); }
+
+/* Hero (chapter 0) */
+.hero { left:clamp(16px, 5vw, 72px); top:clamp(96px, 16vh, 168px); transform:none; width:min(640px, calc(100vw - 32px)); }
+.hero::before { content:""; position:absolute; inset:-120px -160px -80px -200px; z-index:-1; background:radial-gradient(closest-side, rgba(8,12,11,.72), rgba(8,12,11,.42) 55%, rgba(8,12,11,0)); pointer-events:none; }
+.hero h1 { margin:var(--space-5) 0 var(--space-4); font-size:clamp(52px, 8.4vw, 112px); line-height:.94; font-weight:500; letter-spacing:-.045em; color:var(--ink); text-shadow:0 2px 30px rgba(0,0,0,.35); }
+@keyframes rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.hero h1 { animation:rise .7s ease-out both; }
+.hero .lede { font-size:18px; line-height:28px; color:var(--ink); max-width:30em; opacity:0; animation:rise .9s .5s cubic-bezier(.2,.7,.2,1) forwards; }
+.hero .actions { display:flex; flex-wrap:wrap; gap:var(--space-3); margin-top:var(--space-8); opacity:0; animation:rise .9s .7s cubic-bezier(.2,.7,.2,1) forwards; }
+.hero .btn:not(.btn-primary) { background:rgba(14,19,17,.45); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+
+/* Final CTA over the city */
+.cta { width:min(520px, calc(100vw - 32px)); }
+.cta h2 { font-size:44px; line-height:46px; letter-spacing:-.03em; }
+.cta .stats { display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-4); margin:var(--space-6) 0; padding:var(--space-4) 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.cta .stats b { display:block; font-size:24px; line-height:30px; font-weight:500; letter-spacing:-.01em; color:var(--ink); font-variant-numeric:tabular-nums; }
+.cta .stats span { font-size:12px; line-height:16px; color:var(--ink-muted); }
+.cta .actions { display:flex; flex-wrap:wrap; gap:var(--space-3); }
+.cta .btn-primary, .hero .btn-primary { background:var(--brand); border-color:var(--brand); color:var(--on-brand); }
+.cta .fine { margin-top:var(--space-4); font-size:12px; line-height:17px; }
+
+/* Map legend (city chapter) */
+.city-legend { position:absolute; right:clamp(16px, 3vw, 40px); bottom:96px; z-index:5; opacity:0; padding:var(--space-4) var(--space-5); border-radius:var(--radius-xl); background:var(--story-glass-dark); border:1px solid rgba(255,255,255,.08); color:var(--ink); font-size:13px; line-height:18px; }
+.city-legend .t { font-size:12px; color:var(--ink-muted); margin-bottom:var(--space-2); }
+.city-legend ul { list-style:none; margin:0; padding:0; display:grid; gap:5px; }
+.city-legend li { display:flex; align-items:center; gap:var(--space-2); }
+.city-label { position:absolute; z-index:4; font:500 11px var(--font-sans); letter-spacing:.1em; text-transform:uppercase; color:rgba(236,240,235,.55); opacity:0; pointer-events:none; white-space:nowrap; }
+
+
+/* ============ After the story ============ */
+main.after { background:var(--surface); position:relative; z-index:2; }
+.wrap { max-width:1216px; margin:0 auto; padding:0 32px; }
+.sec { padding:96px 0 0; }
+.sec h2 { margin:0 0 var(--space-2); font-size:34px; line-height:40px; font-weight:500; letter-spacing:-.02em; }
+.sec > .wrap > p { margin:0 0 var(--space-8); color:var(--ink-muted); max-width:60ch; font-size:16px; line-height:24px; }
+.steps { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:var(--space-4); }
+.step { padding:var(--space-5) var(--space-4); border-radius:var(--radius-lg); border:1px solid var(--line); background:var(--surface); display:grid; gap:var(--space-2); align-content:start; transition:transform .2s ease, box-shadow .2s ease; }
+.step:hover { transform:translateY(-2px); box-shadow:var(--shadow-float); }
+.step h3 { margin:0; font-size:15px; line-height:20px; font-weight:500; }
+.step p { margin:0; font-size:13px; line-height:18px; color:var(--ink-muted); }
+.split { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-8); align-items:start; }
+.legend-card { justify-self:start; padding:var(--space-5); border-radius:var(--radius-xl); border:1px solid var(--line); background:var(--surface); box-shadow:var(--shadow-float); }
+.legend-card ul { list-style:none; margin:0; padding:0; display:grid; gap:8px; font-size:14px; }
+.legend-card li { display:flex; align-items:center; gap:var(--space-3); }
+.legend-card .t { font-size:12px; color:var(--ink-muted); margin-bottom:var(--space-3); font-weight:500; }
+.callout { position:relative; overflow:hidden; isolation:isolate; margin-top:96px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:var(--space-8); padding:72px var(--space-12); border-radius:var(--radius-xl); background:#111a16; color:#fff; }
+.callout-bg { position:absolute; inset:-8% 0; z-index:-2; background:url(assets/chamber.jpg) center 60%/cover; will-change:transform; }
+.callout::before { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg, rgba(10,14,12,.92) 0%, rgba(10,14,12,.7) 45%, rgba(10,14,12,.15) 100%); }
+.callout .lamp { position:absolute; right:8%; bottom:4%; width:240px; height:240px; z-index:-1; border-radius:50%; background:radial-gradient(closest-side, rgba(255,214,140,.45), rgba(255,214,140,0)); mix-blend-mode:screen; animation:flicker 4.2s steps(1) infinite; pointer-events:none; }
+.callout h2 { margin:0 0 var(--space-2); font-size:34px; line-height:40px; font-weight:500; letter-spacing:-.02em; }
+.callout p { margin:0; opacity:.8; max-width:52ch; }
+.callout .btn { background:#fff; color:#111a16; border-color:#fff; }
+footer { display:grid; grid-template-columns:2fr 1fr 1fr; gap:var(--space-8); margin-top:96px; padding:48px max(32px, calc((100% - 1152px) / 2)); background:#0e1311; font-size:13px; line-height:18px; color:var(--ink-muted); }
+footer p { margin:var(--space-3) 0 0; max-width:46ch; }
+footer .t { font-size:12px; font-weight:500; color:var(--ink); margin-bottom:var(--space-2); }
+footer ul { list-style:none; margin:0; padding:0; display:grid; gap:4px; }
+
+@media (max-width: 820px) {
+  .header { padding:var(--space-3) var(--space-4); gap:var(--space-3); }
+  .header nav { display:none; }
+  .header .btn { margin-left:auto; }
+  .projectbar { padding:6px var(--space-4); }
+  .projectbar .links { display:none; }
+  .chapter:not(.hero) { top:auto; bottom:84px; transform:none; }
+  .chapter h2 { font-size:26px; line-height:30px; }
+  .card { padding:var(--space-5); }
+  .big { font-size:56px; }
+  .cta h2 { font-size:30px; line-height:34px; }
+  .mini-legend { display:none; }
+  .city-legend { display:none; }
+  .hp { top:84px; right:16px; width:96px; margin-top:0; }
+  .hp-notes { display:none; }
+  .split, .callout, footer { grid-template-columns:1fr; }
+  .callout { padding:var(--space-8) var(--space-6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero h1, .hero .lede, .hero .actions { animation:none; opacity:1; transform:none; }
+  .flow.on, .ping-ring, .lamp-glow, .breath, .rain, .callout .lamp { animation:none; }
+  .ping-ring { opacity:.6; }
+}
+</style>
+</head>
+<body>
+
+<div class="projectbar" role="note">
+  <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>Independent prototype. Not an Uisce Éireann service.</span>
+  <span class="links"><a href="#how">How this works</a></span>
+</div>
+
+<header class="header dark" id="header" data-theme="dark">
+  <a class="brand" href="#top" aria-label="GroundWorks home"><img class="logo" src="assets/groundworks-logo.webp" alt="GroundWorks" width="171" height="40"></a>
+  <nav aria-label="Site">
+    <a href="#how">How it works</a>
+    <a href="#sure">The data</a>
+    <a href="#about">About</a>
+  </nav>
+  <a class="btn btn-primary demo-link" href="#">Open the demo <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+</header>
+
+<section class="story" id="top" aria-label="The story, told as you scroll">
+  <div class="stage" id="stage" data-theme="dark">
+    <div class="city-bg" id="cityBg" aria-hidden="true"></div>
+    <canvas id="city" aria-hidden="true"></canvas>
+    <div id="cityLabels" aria-hidden="true"></div>
+
+    <div class="scene-wrap" id="sceneWrap" role="img" aria-label="Photographs of a Dublin street, from the skyline at dusk down to the water mains under the road.">
+      <!-- 0 · Dublin at dusk -->
+      <div class="shot" id="shHero">
+        <div class="cam"><img src="assets/dublin-dusk.jpg" alt="" decoding="async">
+          <svg class="ov" viewBox="0 0 1280 720" aria-hidden="true">
+            <defs><radialGradient id="warm" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffc977" stop-opacity=".5"/><stop offset="1" stop-color="#ffc977" stop-opacity="0"/></radialGradient></defs>
+            <g id="heroLights"></g>
+          </svg>
+        </div>
+        <div class="grade" style="background:linear-gradient(180deg, rgba(10,14,13,.45), rgba(10,14,13,0) 35%, rgba(10,14,13,0) 70%, rgba(10,14,13,.6))"></div>
+      </div>
+
+      <!-- 1a · Block going up -->
+      <div class="shot" id="shBuild">
+        <div class="cam"><img src="assets/block-rising.jpg" alt="" decoding="async">
+          <svg class="ov" viewBox="0 0 1280 720" aria-hidden="true">
+            <g id="boundary" opacity="0">
+              <path id="boundaryPath" d="M405 612 L405 118 L578 118 L578 94 L1290 64" fill="none" stroke="#5fc792" stroke-width="3" stroke-dasharray="14 9" pathLength="1000"/>
+            </g>
+            <g id="buildTag" opacity="0"></g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 1b · Same street, lived in -->
+      <div class="shot" id="shLit">
+        <div class="cam"><img src="assets/block-lit.jpg" alt="" decoding="async">
+          <svg class="ov" viewBox="0 0 1280 720" aria-hidden="true">
+            <ellipse class="breath" cx="760" cy="330" rx="330" ry="230" fill="url(#warm)" opacity=".35"/>
+            <g id="litPing" opacity="0">
+              <ellipse class="ping-ring" cx="565" cy="655" rx="40" ry="12" stroke="#5fc792"/>
+              <ellipse class="ping-ring d2" cx="565" cy="655" rx="40" ry="12" stroke="#5fc792"/>
+            </g>
+            <g id="litTag" opacity="0"></g>
+          </svg>
+        </div>
+        <div class="rain" id="rain"></div>
+      </div>
+      <div class="wipe-line" id="wipeLine"></div>
+
+      <!-- 2 · The clues on the street -->
+      <div class="shot" id="shClue">
+        <div class="cam"><img src="assets/manhole.jpg" alt="" decoding="async">
+          <svg class="ov" viewBox="0 0 1280 720" aria-hidden="true">
+            <g id="clueManhole" opacity="0">
+              <ellipse class="ping-ring" cx="652" cy="463" rx="352" ry="112" stroke="#f2c230"/>
+              <ellipse class="ping-ring d2" cx="652" cy="463" rx="352" ry="112" stroke="#f2c230"/>
+            </g>
+            <g id="clueBox" opacity="0">
+              <rect class="ping-ring" x="852" y="50" width="98" height="96" rx="6" stroke="#f2c230"/>
+              <rect class="ping-ring d2" x="852" y="50" width="98" height="96" rx="6" stroke="#f2c230"/>
+            </g>
+            <g id="clueTags"></g>
+          </svg>
+        </div>
+        <div class="dip" id="dip"></div>
+      </div>
+
+      <!-- 3 · Under the road -->
+      <div class="shot" id="shSect">
+        <div class="cam"><img src="assets/cross-section.jpg" alt="" decoding="async">
+          <svg class="ov" viewBox="0 0 1280 720" aria-hidden="true">
+            <defs>
+              <filter id="blur8" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="8"/></filter>
+              <radialGradient id="lampG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd38a" stop-opacity=".75"/><stop offset="1" stop-color="#ffd38a" stop-opacity="0"/></radialGradient>
+              <clipPath id="traceClip"><rect id="traceClipR" x="0" y="380" width="0" height="260"/></clipPath>
+            </defs>
+            <circle class="lamp-glow" cx="1001" cy="572" r="90" fill="url(#lampG)"/>
+            <g class="ruler" id="ruler" opacity="0"></g>
+            <g id="strata" opacity="0"></g>
+            <g id="probes"></g>
+            <g clip-path="url(#traceClip)" id="traces"></g>
+            <g id="sectTags"></g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 4 · The new pipe -->
+      <div class="shot" id="shFix">
+        <div class="cam"><img id="fixImg" src="assets/new-main.jpg" alt="" decoding="async">
+          <svg class="ov" viewBox="0 0 1280 720" aria-hidden="true">
+            <ellipse id="fixWarm" class="breath" cx="1000" cy="190" rx="300" ry="150" fill="url(#warm)" opacity="0"/>
+            <path id="extGlow" d="M1017 298 C 1004 360, 985 430, 962 520 S 922 660, 905 730" fill="none" stroke="#e2ae3c" stroke-width="26" stroke-linecap="round" filter="url(#blur8)" opacity=".75" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+            <path id="extCore" d="M1017 298 C 1004 360, 985 430, 962 520 S 922 660, 905 730" fill="none" stroke="#f1c86c" stroke-width="5" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+            <path id="extFlow" class="flow gold" d="M1017 298 C 1004 360, 985 430, 962 520 S 922 660, 905 730"/>
+            <g id="fixTag" opacity="0"></g>
+          </svg>
+        </div>
+      </div>
+      <div class="vignette"></div>
+    </div>
+
+    <!-- Floating hydrant plate -->
+    <div class="hp" id="hp" aria-hidden="true">
+      <div class="plate" id="plate"><img src="assets/hydrant-plate.jpg" alt=""></div>
+      <ol class="hp-notes">
+        <li style="top:24%"><span><b>100</b>main is 100 mm across</span></li>
+        <li style="top:48%"><span><b>H</b>a hydrant is near</span></li>
+        <li style="top:73%"><span><b>2.5</b>it's 2.5 m from the plate</span></li>
+      </ol>
+    </div>
+
+    <!-- Chapter 0 · Hero -->
+    <div class="chapter hero on" data-a="-1" data-b="0.085">
+      <h1>Will the pipes<br>cope?</h1>
+      <p class="lede">Dublin is building thousands of new homes. Scroll down to see what's under them, and whether the water can reach them.</p>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg demo-link" href="#">Open the demo <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <button class="btn btn-lg" data-jump="1">Look underground <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button>
+      </div>
+    </div>
+
+    <!-- Chapter 1 · Homes -->
+    <div class="chapter" data-a="0.10" data-b="0.26">
+      <div class="card">
+        <div class="big" id="nTotal">0</div>
+        <p><strong>new homes with planning permission</strong> in the study area, from applications made in the last three years.</p>
+        <p>Every one of them will need a water connection.</p>
+        <p class="sample-note sample-flag" hidden>Sample figures, until the pipeline has run.</p>
+      </div>
+    </div>
+
+    <!-- Chapter 2 · Clues -->
+    <div class="chapter" data-a="0.285" data-b="0.445">
+      <div class="card">
+        <h2>We can't see the pipes.</h2>
+        <p>Uisce Éireann's pipe records aren't public. So we read the clues the street gives away: yellow <span class="hplate-chip">H</span> hydrant plates, manhole covers, and buildings that already have water.</p>
+        <p>A hydrant plate even gives away the size of the main below it.</p>
+      </div>
+    </div>
+
+    <!-- Chapter 3 · Network -->
+    <div class="chapter" data-a="0.455" data-b="0.635">
+      <div class="card">
+        <h2>So we estimate them.</h2>
+        <p>Each street gets a confidence level from the evidence along it. Strong evidence draws a solid main; weak evidence, a dashed one.</p>
+        <ul class="mini-legend">
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--pipe-high)" stroke-width="3" stroke-linecap="round"/></svg>High</li>
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--pipe-medium)" stroke-width="2.5" stroke-linecap="round"/></svg>Medium</li>
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--pipe-low)" stroke-width="2" stroke-dasharray="6 4"/></svg>Low</li>
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--pipe-none)" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/></svg>No evidence</li>
+        </ul>
+        <div class="unserved-row" id="unservedRow"><b id="nUnserved">0</b><span>planned homes have no estimated main within 50 m.</span></div>
+      </div>
+    </div>
+
+    <!-- Chapter 4 · New pipe -->
+    <div class="chapter" data-a="0.645" data-b="0.80">
+      <div class="card">
+        <h2>Then we route the new pipe.</h2>
+        <div class="big" style="color:var(--or)"><span id="nKm">0.0</span><small>km</small></div>
+        <p>About this much new main would reach every unserved site, taking the shortest route along existing streets.</p>
+      </div>
+    </div>
+
+    <!-- Chapter 5 · City -->
+    <div class="chapter" data-a="0.815" data-b="0.885">
+      <div class="card">
+        <h2>That was one street.<br>Here's Dublin.</h2>
+        <p>Every line is an estimated main. Every gold line is new pipe we'd need.</p>
+      </div>
+    </div>
+    <div class="chapter cta" data-a="0.895" data-b="2">
+      <div class="card">
+        <h2>See every development on the map.</h2>
+        <p>Pick any planned development, check its nearest estimated main, then extend the network and watch the new pipe route itself.</p>
+        <div class="stats">
+          <div><b class="vTotal">–</b><span>planned homes</span></div>
+          <div><b class="vUnserved" style="color:var(--alert)">–</b><span>look unserved</span></div>
+          <div><b class="vKm" style="color:var(--or)">–</b><span>km of new pipe, about</span></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary btn-lg demo-link" href="#">Open the demo <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-lg" href="#how" style="background:transparent">How the estimate works</a>
+        </div>
+        <p class="fine">The network is estimated from public evidence. It is not Uisce Éireann's pipe record. <span class="sample-flag" hidden>Figures shown are samples until the pipeline has run.</span></p>
+      </div>
+    </div>
+
+    <div class="city-legend" id="cityLegend" aria-hidden="true">
+      <div class="t">Estimated mains</div>
+      <ul>
+        <li><svg width="26" height="8"><line x1="2" y1="4" x2="24" y2="4" style="stroke:var(--pipe-high)" stroke-width="3" stroke-linecap="round"/></svg>High confidence</li>
+        <li><svg width="26" height="8"><line x1="2" y1="4" x2="24" y2="4" style="stroke:var(--pipe-medium)" stroke-width="2.5" stroke-linecap="round"/></svg>Medium</li>
+        <li><svg width="26" height="8"><line x1="2" y1="4" x2="24" y2="4" style="stroke:var(--pipe-low)" stroke-width="2" stroke-dasharray="6 4"/></svg>Low</li>
+        <li><svg width="26" height="8"><line x1="2" y1="4" x2="24" y2="4" style="stroke:var(--or)" stroke-width="3" stroke-linecap="round"/></svg>Proposed new pipe</li>
+        <li><svg width="26" height="12"><circle cx="13" cy="6" r="4.5" style="fill:var(--glas)"/></svg>Served development</li>
+        <li><svg width="26" height="12"><circle cx="13" cy="6" r="4" fill="none" style="stroke:var(--alert)" stroke-width="2.5"/></svg>Unserved development</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<main class="after">
+  <section class="sec" id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <p>There are no public pipe records, so we estimate where the mains are and say how sure we are, street by street.</p>
+      <ol class="steps">
+        <li class="step"><h3>Find the planned homes</h3><p>Planning applications from the last three years, from the national planning database.</p></li>
+        <li class="step"><h3>Read each application</h3><p>A language model pulls out the number of units and whether it's a new build.</p></li>
+        <li class="step"><h3>Estimate the mains</h3><p>Each street gets a confidence level from hydrants, manholes and buildings along it.</p></li>
+        <li class="step"><h3>Find the gaps</h3><p>A development counts as served if an estimated main runs within 50 m.</p></li>
+        <li class="step"><h3>Route the new pipe</h3><p>For the rest, the shortest new network along existing streets that reaches them all.</p></li>
+      </ol>
+    </div>
+  </section>
+  <section class="sec" id="sure">
+    <div class="wrap split">
+      <div>
+        <h2>How sure are we?</h2>
+        <p style="margin:8px 0 0;color:var(--ink-muted);max-width:46ch;font-size:16px;line-height:24px">Every street gets a confidence level from the evidence along it. The map shows all four, so you can see where the estimate is strong and where it's a guess.</p>
+      </div>
+      <div class="legend-card">
+        <div class="t">Estimated mains</div>
+        <ul>
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--pipe-high)" stroke-width="3" stroke-linecap="round"/></svg>High confidence</li>
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--pipe-medium)" stroke-width="2.5" stroke-linecap="round"/></svg>Medium</li>
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--pipe-low)" stroke-width="2" stroke-dasharray="6 4"/></svg>Low</li>
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--pipe-none)" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/></svg>No evidence</li>
+          <li><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" style="stroke:var(--or)" stroke-width="3" stroke-linecap="round"/></svg>Proposed new pipe</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <div class="wrap">
+    <section class="callout" id="about">
+      <div class="callout-bg" id="calloutBg" aria-hidden="true"></div>
+      <span class="lamp" aria-hidden="true"></span>
+      <div><h2>See it on the map</h2><p>Pick any development to see its nearest estimated main, then extend the network and watch the new pipe route to every unserved site.</p></div>
+      <a class="btn btn-lg demo-link" href="#">Open the demo <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </section>
+  </div>
+  <footer data-theme="dark">
+    <div>
+      <a class="brand" href="#top" aria-label="GroundWorks home"><img class="logo" src="assets/groundworks-logo.webp" alt="GroundWorks" width="171" height="40"></a>
+      <p>An independent project. The water-main network is estimated from public evidence and is not Uisce Éireann's pipe record. Don't use it for engineering or planning decisions.</p>
+    </div>
+    <div><div class="t">Data</div><ul><li>National Planning Application Database</li><li>OpenStreetMap contributors</li><li>Mapillary</li></ul></div>
+    <div><div class="t">Built at</div><p style="margin:0">Build for Ireland, Dogpatch Labs, Dublin. The images in the story are illustrations, not real sites, and the pipes traced over them are drawn for the story.</p></div>
+  </footer>
+</main>
+
+<script>
+/* ======================================================================
+   CONFIG
+   DEMO_URL     where every "Open the demo" button goes (the map app).
+   SUMMARY_URL  pipeline output; fields total_units, unconnected_units,
+                new_pipe_km. If it can't be read, SAMPLE is used and the
+                "Sample figures" flags are shown.
+   ====================================================================== */
+const DEMO_URL = '/';
+const SUMMARY_URL = '/data/summary.json';
+const SAMPLE = { total_units: 21640, unconnected_units: 4180, new_pipe_km: 12.6 };
+const DATA = { ...SAMPLE, sample: true };
+
+/* ---------- helpers ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Scroll-scrubbed segment. With reduced motion it becomes a whole step.
+const seg = (p, a, b) => REDUCE ? (p >= (a + b) / 2 ? 1 : 0) : clamp((p - a) / (b - a));
+const lerp = (a, b, t) => a + (b - a) * t;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const easeIn = t => t * t * t;
+const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const fmt = n => Math.round(n).toLocaleString('en-IE');
+function el(tag, attrs = {}, parent) {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, String(attrs[k]));
+  if (parent) parent.appendChild(n);
+  return n;
+}
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+$$('.demo-link').forEach(a => a.href = DEMO_URL);
+
+/* ---------- overlay helpers (photo coordinates, 1280×720) ---------- */
+const PILL = { served: ['#dcefe3', '#0d6b48'], unserved: ['#fce6dc', '#b93a12'], new: ['#fbf0d6', '#7a5200'], clue: ['#f2c230', '#111a16'], note: ['rgba(14,19,17,.78)', '#ecf0eb'] };
+// A label pill with an optional leader line to (tx, ty). `n` is the phone layout:
+// { x, y } to move the label (and drop the leader), or 'hide'. Phones draw labels smaller.
+const PILLS = [];
+function pill(parent, x, y, text, kind, tx, ty, n) {
+  const g = el('g', { class: 'pill' + (kind === 'note' ? ' pill-note' : ''), opacity: 0 }, parent);
+  const inner = el('g', {}, g);
+  PILLS.push({ inner, x, y, text, kind, tx, ty, n });
+  return g;
+}
+function layoutPills(narrow) {
+  PILLS.forEach(({ inner, x, y, text, kind, tx, ty, n }) => {
+    inner.textContent = '';
+    if (narrow && n === 'hide') return;
+    const k = narrow ? .62 : 1;
+    let lead = tx != null;
+    if (narrow && n) { x = n.x; y = n.y; lead = lead && n.lead; }
+    const [bg, fg] = PILL[kind];
+    if (lead) {
+      el('path', { class: 'lead', d: `M${x} ${y} L${tx} ${ty}`, stroke: kind === 'note' ? 'rgba(236,240,235,.7)' : bg }, inner);
+      el('circle', { cx: tx, cy: ty, r: 5 * k, fill: bg, stroke: '#0e1311', 'stroke-width': 2 * k }, inner);
+    }
+    const lbl = el('g', { transform: `translate(${x} ${y}) scale(${k})` }, inner);
+    const w = text.length * 8.6 + 30;
+    el('rect', { x: -w / 2, y: -17, width: w, height: 34, rx: 17, fill: bg, stroke: 'rgba(0,0,0,.25)' }, lbl);
+    el('text', { x: 0, y: 5.5, 'text-anchor': 'middle', fill: fg }, lbl).textContent = text;
+  });
+}
+const show = (n, v) => n.setAttribute('opacity', (+v).toFixed(3));
+
+/* hero: a few windows coming on across the city at dusk */
+const heroLights = $('#heroLights');
+seed = 3;
+const lights = Array.from({ length: 26 }, () => {
+  const x = 60 + rnd() * 1160, y = 230 + rnd() * 470;
+  const c = el('circle', { cx: x, cy: y, r: 3 + rnd() * 5, fill: 'url(#warm)', opacity: 0 }, heroLights);
+  return { c, ph: rnd() * 6.28, sp: .4 + rnd() * .8 };
+});
+
+/* homes */
+pill($('#buildTag'), 760, 190, 'Planning application · site boundary', 'note', null, null, { x: 790, y: 190 }).setAttribute('opacity', 1);
+pill($('#litTag'), 760, 120, 'Needs a water connection', 'note', 700, 250, { x: 780, y: 150, lead: true }).setAttribute('opacity', 1);
+
+/* clues */
+const tagManhole = pill($('#clueTags'), 420, 620, 'Manhole cover', 'clue', 560, 520, { x: 610, y: 300 });
+const tagBox = pill($('#clueTags'), 820, 230, 'Marker plate', 'clue', 890, 142, 'hide');
+
+/* cross-section: ruler, strata, probes, the estimated main by confidence */
+const ruler = $('#ruler');
+el('line', { x1: 34, y1: 100, x2: 34, y2: 700 }, ruler);
+for (let d = 0; d <= 3; d += .5) {
+  const y = 100 + d * 200;
+  el('line', { x1: 28, y1: y, x2: 40, y2: y }, ruler);
+  if (d % 1 === 0 && d > 0) el('text', { x: 46, y: y + 4 }, ruler).textContent = d + ' m';
+}
+[['Road', 64], ['Topsoil', 210], ['Boulder clay', 300], ['Calp limestone', 440]].forEach(([t, y]) =>
+  el('text', { class: 'strata', x: 540, y }, $('#strata')).textContent = t);
+const probes = [190, 470, 812].map(x => {
+  const g = el('g', { opacity: 0 }, $('#probes'));
+  const cp = el('clipPath', { id: 'pr' + x }, $('#shSect defs'));
+  const r = el('rect', { x: x - 12, y: 92, width: 24, height: 0 }, cp);
+  const inner = el('g', { 'clip-path': `url(#pr${x})` }, g);
+  el('line', { class: 'probe', x1: x, y1: 100, x2: x, y2: 498 }, inner);
+  el('circle', { class: 'probe-node', cx: x, cy: 512, r: 9 }, inner);
+  el('circle', { class: 'ping-ring', cx: x, cy: 100, r: 14, stroke: '#f2c230' }, g);
+  return { g, r };
+});
+// segments of the main, left to right: high → medium → low → none
+const TR = [
+  [0, 380, '#79d9a6', 9, null], [380, 650, '#46a777', 7, null], [650, 830, '#7bb594', 5, '22 14'], [830, 990, '#a7b0a9', 4, '3 14']
+];
+TR.forEach(([x1, x2, c, w, dash]) => {
+  if (!dash || dash[0] !== '3') el('line', { class: 'trace-glow', x1, y1: 512, x2, y2: 512, stroke: c, 'stroke-width': w + 16 }, $('#traces'));
+  const l = el('line', { class: 'trace', x1, y1: 512, x2, y2: 512, stroke: c, 'stroke-width': w }, $('#traces'));
+  if (dash) l.setAttribute('stroke-dasharray', dash);
+});
+const sectFlow = el('path', { class: 'flow', d: 'M0 512 H650' }, $('#traces'));
+const sTagHigh = pill($('#sectTags'), 560, 600, 'High confidence', 'served', 560, 520, { x: 400, y: 455, lead: true });
+const sTagLow = pill($('#sectTags'), 740, 600, 'Low', 'new', 740, 520, { x: 740, y: 455, lead: true });
+const sTagGap = pill($('#sectTags'), 1055, 300, 'No main within 50 m', 'unserved', null, null, { x: 985, y: 430 });
+
+/* the fix */
+const fixTag = pill($('#fixTag'), 1130, 250, 'New pipe', 'new', 1018, 300, { x: 1065, y: 225, lead: true });
+fixTag.setAttribute('opacity', 1);
+
+/* ======================================================================
+   CITY: the plan-view reveal on a canvas.
+   A procedural Dublin-ish network: the Liffey east–west, the two canals
+   as a ring, the bay to the east. Not real geometry; an illustration.
+   ====================================================================== */
+const cv = $('#city'), cx2d = cv.getContext('2d');
+let CW = 0, CH = 0, DPR = 1, city = null;
+function buildCity() {
+  seed = 42;
+  const cols = 38, rows = 22, nodes = [], edges = [];
+  const river = u => .5 + .045 * Math.sin(u * 7.5 + .6) + .02 * Math.sin(u * 17);
+  const bay = (u, v) => u > .8 && v > .3 + (u - .8) * .9;
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+    let u = (i + .5) / cols + (rnd() - .5) * .018, v = (j + .5) / rows + (rnd() - .5) * .03;
+    const d = Math.hypot(u - .5, (v - .5) * .7);
+    u = .5 + (u - .5) * (.86 + d * .3); v = .5 + (v - .5) * (.86 + d * .3);
+    const wet = Math.abs(v - river(u)) < .016 || bay(u, v);
+    nodes.push({ u, v, i, j, wet, adj: [] });
+  }
+  const N = (i, j) => nodes[j * cols + i];
+  const addEdge = (a, b) => {
+    if (!a || !b || a.wet || b.wet) return;
+    const crosses = (a.v - river(a.u)) * (b.v - river(b.u)) < 0;
+    if (crosses && (a.i % 5 !== 2)) return;
+    const mu = (a.u + b.u) / 2, mv = (a.v + b.v) / 2, d = Math.hypot(mu - .5, (mv - .48) * 1.15);
+    const s = 1.05 - d * 1.9 + (rnd() - .5) * .55;
+    const conf = s > .62 ? 'high' : s > .36 ? 'medium' : s > .16 ? 'low' : 'none';
+    const e = { a, b, conf, d, ext: false };
+    edges.push(e); a.adj.push(e); b.adj.push(e);
+  };
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+    const n = N(i, j);
+    if (i < cols - 1 && rnd() < .9) addEdge(n, N(i + 1, j));
+    if (j < rows - 1 && rnd() < .84) addEdge(n, N(i, j + 1));
+    if (i < cols - 1 && j < rows - 1 && rnd() < .07) addEdge(n, N(i + 1, j + 1));
+  }
+  edges.sort((x, y) => x.d - y.d);
+  edges.forEach((e, i) => e.idx = i);
+  const devs = [];
+  const land = nodes.filter(n => !n.wet && n.adj.length);
+  for (let k = 0; k < 90; k++) {
+    const n = land[Math.floor(rnd() * land.length)];
+    const served = n.adj.some(e => e.conf !== 'none');
+    devs.push({ n, served, size: 2.5 + rnd() * 4.5, phase: rnd() * 6.28 });
+  }
+  devs.filter(d => !d.served).forEach(d => {
+    const prev = new Map([[d.n, null]]); const q = [d.n]; let hit = null;
+    while (q.length && !hit) {
+      const n = q.shift();
+      for (const e of n.adj) {
+        const m = e.a === n ? e.b : e.a;
+        if (prev.has(m)) continue; prev.set(m, e);
+        if (m.adj.some(x => x.conf !== 'none' && !x.ext)) { hit = m; break; }
+        q.push(m);
+      }
+    }
+    for (let m = hit; m && prev.get(m); ) { const e = prev.get(m); e.ext = true; m = e.a === m ? e.b : e.a; }
+  });
+  const extEdges = edges.filter(e => e.ext).sort((x, y) => x.d - y.d);
+  const flowEdges = edges.filter(e => e.conf === 'high' || e.conf === 'medium');
+  const parts = Array.from({ length: 170 }, () => ({ e: flowEdges[Math.floor(rnd() * flowEdges.length)], t: rnd(), dir: rnd() < .5 ? 1 : -1, sp: .004 + rnd() * .006 }));
+  city = { nodes, edges, devs, extEdges, parts, river, cols, rows };
+}
+function sizeCity() {
+  DPR = Math.min(2, devicePixelRatio || 1);
+  CW = cv.clientWidth; CH = cv.clientHeight;
+  cv.width = CW * DPR; cv.height = CH * DPR;
+  placeCityLabels();
+}
+function proj(u, v) {
+  const s = Math.max(CW, CH * 1.55) * 1.04;
+  return [CW * .5 + (u - .5) * s + CW * .08, CH * .5 + (v - .5) * s / 1.55];
+}
+const CONF_STYLE = {
+  high: ['#79d9a6', 2.2, []], medium: ['#46a777', 1.7, []], low: ['#3f7f60', 1.4, [5, 4]], none: ['#6e7771', 1, [1, 4]]
+};
+const SPRITE = document.createElement('canvas'); SPRITE.width = SPRITE.height = 32;
+{ const g = SPRITE.getContext('2d'), r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  r.addColorStop(0, 'rgba(225,255,238,1)'); r.addColorStop(.3, 'rgba(121,217,166,.45)'); r.addColorStop(1, 'rgba(121,217,166,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 32, 32); }
+let cityReveal = 0, extReveal = 0, cityAlpha = 0, lastT = 0;
+function drawCity(time) {
+  if (!city || cityAlpha <= 0) return;
+  const c = cx2d, dt = Math.min(50, time - lastT || 16) / 16; lastT = time;
+  c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  c.clearRect(0, 0, CW, CH);
+  c.fillStyle = 'rgba(14,19,17,.8)'; c.fillRect(0, 0, CW, CH); // the aerial photo shows faintly through
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.strokeStyle = '#1b2a2b'; c.lineWidth = Math.max(10, CW * .012);
+  c.beginPath(); for (let u = -.1; u <= .9; u += .01) { const [x, y] = proj(u, city.river(u)); u < -.09 ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke();
+  c.fillStyle = '#1b2a2b'; c.beginPath();
+  let [bx, by] = proj(.8, .3); c.moveTo(bx, by);
+  for (let u = .8; u <= 1.3; u += .02) { const [x, y] = proj(u, .3 + (u - .8) * .9 + .012 * Math.sin(u * 40)); c.lineTo(x, y); }
+  [bx, by] = proj(1.3, 1.3); c.lineTo(bx, by); [bx, by] = proj(.8, 1.3); c.lineTo(bx, by); c.closePath(); c.fill();
+  c.lineWidth = 2.5; c.strokeStyle = '#1f3335';
+  [[-.05, 3.3, .33, .26], [3.25, 6.1, .35, .29]].forEach(([a0, a1, rx, ry]) => {
+    c.beginPath(); for (let a = a0; a <= a1; a += .04) { const [x, y] = proj(.5 + Math.cos(a) * rx, .5 - Math.sin(a) * ry); a === a0 ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke();
+  });
+  const n = Math.floor(city.edges.length * cityReveal);
+  for (const k of ['none', 'low', 'medium', 'high']) {
+    const [col, w, dash] = CONF_STYLE[k];
+    c.strokeStyle = col; c.lineWidth = w; c.setLineDash(dash); c.beginPath();
+    for (let i = 0; i < n; i++) { const e = city.edges[i]; if (e.conf !== k) continue; const [x1, y1] = proj(e.a.u, e.a.v), [x2, y2] = proj(e.b.u, e.b.v); c.moveTo(x1, y1); c.lineTo(x2, y2); }
+    c.stroke();
+  }
+  c.setLineDash([]);
+  if (cityReveal > .3) {
+    c.globalCompositeOperation = 'lighter';
+    for (const p of city.parts) {
+      if (!REDUCE) {
+        p.t += p.sp * p.dir * dt;
+        if (p.t > 1 || p.t < 0) {
+          const end = p.t > 1 ? (p.dir > 0 ? p.e.b : p.e.a) : (p.dir > 0 ? p.e.a : p.e.b);
+          const opts = end.adj.filter(e => e !== p.e && (e.conf === 'high' || e.conf === 'medium'));
+          if (opts.length) { p.e = opts[Math.floor(Math.random() * opts.length)]; p.dir = p.e.a === end ? 1 : -1; p.t = p.dir > 0 ? 0 : 1; }
+          else { p.dir *= -1; p.t = clamp(p.t); }
+        }
+      }
+      if (p.e.idx >= n) continue;
+      const [x1, y1] = proj(p.e.a.u, p.e.a.v), [x2, y2] = proj(p.e.b.u, p.e.b.v);
+      c.drawImage(SPRITE, lerp(x1, x2, p.t) - 8, lerp(y1, y2, p.t) - 8, 16, 16);
+    }
+    c.globalCompositeOperation = 'source-over';
+  }
+  const m = Math.floor(city.extEdges.length * extReveal);
+  if (m) {
+    c.strokeStyle = '#e2ae3c'; c.lineWidth = 3; c.shadowColor = 'rgba(226,174,60,.8)'; c.shadowBlur = 12; c.beginPath();
+    for (let i = 0; i < m; i++) { const e = city.extEdges[i]; const [x1, y1] = proj(e.a.u, e.a.v), [x2, y2] = proj(e.b.u, e.b.v); c.moveTo(x1, y1); c.lineTo(x2, y2); }
+    c.stroke(); c.shadowBlur = 0;
+  }
+  const showDevs = seg(cityReveal, .35, .9);
+  if (showDevs > 0) for (const d of city.devs) {
+    if (d.n.adj.every(e => e.idx >= n)) continue;
+    const [x, y] = proj(d.n.u, d.n.v);
+    const r = d.size * easeOut(showDevs);
+    const fixed = !d.served && extReveal > .95;
+    if (d.served || fixed) {
+      c.fillStyle = fixed ? '#e2ae3c' : '#5fc792'; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill();
+    } else {
+      const pulse = REDUCE ? 0 : (Math.sin(time / 380 + d.phase) + 1) * 3;
+      c.strokeStyle = 'rgba(255,132,86,' + (.35 - pulse / 30).toFixed(3) + ')'; c.lineWidth = 1.5;
+      c.beginPath(); c.arc(x, y, r + 4 + pulse, 0, 6.283); c.stroke();
+      c.strokeStyle = '#ff8456'; c.lineWidth = 2.5; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.stroke();
+    }
+  }
+  const vg = c.createRadialGradient(CW * .55, CH * .5, Math.min(CW, CH) * .3, CW * .55, CH * .5, Math.max(CW, CH) * .75);
+  vg.addColorStop(0, 'rgba(14,19,17,0)'); vg.addColorStop(1, 'rgba(14,19,17,.8)');
+  c.fillStyle = vg; c.fillRect(0, 0, CW, CH);
+}
+const LABELS = [['An Life · Liffey', .6, .545], ['Royal Canal', .5, .2], ['Grand Canal', .56, .83], ['Dublin Bay', .9, .7]];
+const labelEls = LABELS.map(([t]) => { const d = document.createElement('div'); d.className = 'city-label'; d.textContent = t; $('#cityLabels').appendChild(d); return d; });
+function placeCityLabels() { LABELS.forEach(([, u, v], i) => { const [x, y] = proj(u, v); labelEls[i].style.left = x + 'px'; labelEls[i].style.top = y + 'px'; }); }
+
+/* ======================================================================
+   CAMERA: each photo sits in a 1280×720 box. cam() scales it to cover
+   the stage at zoom z, centred on the focus point (fx, fy), clamped so
+   the photo always fills the frame.
+   ====================================================================== */
+const story = $('.story'), stage = $('#stage'), wrap = $('#sceneWrap');
+let SW = 0, SH = 0;
+const SH_ = id => { const e = $('#' + id); return { e, cam: $('.cam', e), on: null }; };
+const shots = { hero: SH_('shHero'), build: SH_('shBuild'), lit: SH_('shLit'), clue: SH_('shClue'), sect: SH_('shSect'), fix: SH_('shFix') };
+function cam(sh, fx, fy, z) {
+  const s = Math.max(SW / 1280, SH / 720) * z;
+  const tx = clamp(SW / 2 - fx * s, SW - 1280 * s, 0), ty = clamp(SH / 2 - fy * s, SH - 720 * s, 0);
+  sh.cam.style.transform = `translate3d(${tx.toFixed(2)}px,${ty.toFixed(2)}px,0) scale(${s.toFixed(5)})`;
+}
+function vis(sh, o) {
+  const on = o > 0.001;
+  if (on !== sh.on) { sh.e.style.visibility = on ? 'visible' : 'hidden'; sh.on = on; }
+  if (on) sh.e.style.opacity = o.toFixed(3);
+  return on;
+}
+
+/* ======================================================================
+   SCROLL → STORY
+   ====================================================================== */
+const chapters = $$('.chapter');
+const header = $('#header');
+const JUMPS = [0, .17, .37, .53, .71, .87, .97];
+let P = 0, mouseX = 0, mouseY = 0;
+
+function progress() {
+  const r = story.getBoundingClientRect();
+  return clamp(-r.top / (r.height - innerHeight));
+}
+function jump(i) {
+  const top = story.getBoundingClientRect().top + scrollY;
+  scrollTo({ top: top + JUMPS[i] * (story.offsetHeight - innerHeight), behavior: REDUCE ? 'auto' : 'smooth' });
+}
+$$('[data-jump]').forEach(b => b.addEventListener('click', () => jump(+b.dataset.jump)));
+
+const hp = $('#hp'), plate = $('#plate'), notes = $$('.hp-notes li');
+const wipeLine = $('#wipeLine'), dip = $('#dip'), fixImg = $('#fixImg');
+
+function render(t) {
+  const p = P;
+  const idle = REDUCE ? 0 : 1;
+  const narrow = SW / SH < 1;
+  const mx = mouseX * idle, my = mouseY * idle;
+
+  // 0 · Dublin at dusk: slow push-in, windows coming on
+  if (vis(shots.hero, 1 - seg(p, .1, .13))) {
+    const z = 1.06 + .22 * easeIO(seg(p, 0, .12)) + .015 * Math.sin(t / 3800) * idle;
+    cam(shots.hero, 640 - mx * 40 + (narrow ? 60 : 0), 360 - my * 20 + 40 * seg(p, 0, .12), z);
+    lights.forEach(l => l.c.setAttribute('opacity', (idle ? .45 + .45 * Math.sin(t / 900 * l.sp + l.ph) : .7).toFixed(2)));
+  }
+
+  // 1 · the homes: site boundary on a block going up, then the street lived in
+  if (vis(shots.build, seg(p, .085, .115) * (1 - seg(p, .25, .27)))) {
+    const g = 1 - seg(p, .11, .17);
+    shots.build.cam.firstElementChild.style.filter = `grayscale(${g.toFixed(2)}) brightness(${(.8 + .2 * (1 - g)).toFixed(2)}) contrast(1.05)`;
+    cam(shots.build, 820 - mx * 30, 330, 1.18 - .12 * easeOut(seg(p, .085, .235)) + .01 * Math.sin(t / 3000) * idle);
+    $('#boundaryPath').setAttribute('stroke-dashoffset', (1000 * (1 - easeOut(seg(p, .1, .15)))).toFixed(1));
+    show($('#boundary'), 1 - seg(p, .19, .22));
+    show($('#buildTag'), seg(p, .13, .145) * (1 - seg(p, .18, .2)));
+  }
+  const wipe = easeIO(seg(p, .165, .235));
+  if (vis(shots.lit, wipe > 0 ? 1 - seg(p, .27, .3) : 0)) {
+    const edge = wipe * 118 - 9; // soft bottom-up reveal, like floors going up
+    const m = wipe >= 1 ? 'none' : `linear-gradient(to top, #000 ${edge.toFixed(1)}%, transparent ${(edge + 9).toFixed(1)}%)`;
+    shots.lit.e.style.webkitMaskImage = m; shots.lit.e.style.maskImage = m;
+    cam(shots.lit, 740 - mx * 30 + (narrow ? 40 : 0), 340, 1.14 - .08 * easeOut(seg(p, .165, .3)) + .01 * Math.sin(t / 3400) * idle);
+    show($('#litPing'), seg(p, .23, .245));
+    show($('#litTag'), seg(p, .235, .25));
+    $('#rain').style.opacity = (.8 * seg(p, .2, .24)).toFixed(2);
+  }
+  wipeLine.style.opacity = (wipe > 0 && wipe < 1 ? 1 : 0);
+  wipeLine.style.top = ((1 - (wipe * 1.18 - .09) - .045) * 100).toFixed(1) + '%';
+  $('#nTotal').textContent = fmt(DATA.total_units * easeOut(seg(p, .105, .235)));
+
+  // 2 · the clues: pings on the manhole and marker plate, the hydrant plate decoded, then down the manhole
+  const dive = easeIn(seg(p, .405, .47));
+  if (vis(shots.clue, seg(p, .27, .3) * (1 - seg(p, .465, .475)))) {
+    cam(shots.clue, lerp(lerp(700, 652, seg(p, .27, .4)), 652, dive) - mx * 25, lerp(lerp(380, 440, seg(p, .27, .4)), 463, dive), 1.04 + .16 * easeOut(seg(p, .27, .4)) + 3.2 * dive + .01 * Math.sin(t / 3200) * idle);
+    show($('#clueManhole'), seg(p, .31, .325) * (1 - dive * 3));
+    show($('#clueBox'), seg(p, .325, .34) * (1 - seg(p, .4, .41)));
+    show(tagManhole, seg(p, .315, .33) * (1 - seg(p, .395, .405)));
+    show(tagBox, seg(p, .33, .345) * (1 - seg(p, .395, .405)));
+    dip.style.opacity = easeIn(seg(p, .43, .465)).toFixed(3);
+  }
+  const hIn = easeOut(seg(p, .335, .37)), hOut = seg(p, .395, .415);
+  const hv = hIn * (1 - hOut);
+  hp.style.visibility = hv > 0 ? 'visible' : 'hidden';
+  if (hv > 0) {
+    hp.style.opacity = hv.toFixed(3);
+    const bob = Math.sin(t / 1300) * 6 * idle;
+    hp.style.transform = `translate3d(${((1 - hIn) * 80 + hOut * 40).toFixed(1)}px, ${(bob - hOut * 30).toFixed(1)}px, 0)`;
+    const ry = lerp(-42, -14, hIn) + Math.sin(t / 1700) * 5 * idle - mx * 14, rx = 6 + Math.sin(t / 2100) * 3 * idle + my * 8;
+    plate.style.transform = `rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg)`;
+    notes.forEach((n, i) => {
+      const v = seg(p, .35 + i * .01, .36 + i * .01);
+      n.style.opacity = v.toFixed(2); n.style.transform = `translateX(${((1 - v) * 10).toFixed(1)}px)`;
+    });
+  }
+
+  // 3 · under the road: sink from the surface to the main, then trace it by confidence
+  if (vis(shots.sect, seg(p, .445, .475))) {
+    const d = easeIO(seg(p, .445, .53));
+    const fx = narrow ? lerp(330, 980, easeIO(seg(p, .54, .62))) : 720;
+    cam(shots.sect, fx - mx * 20, lerp(110, narrow ? 620 : 400, d), lerp(1.7, narrow ? 1.7 : 1.04, d) + .008 * Math.sin(t / 3600) * idle);
+    show($('#ruler'), seg(p, .47, .49)); show($('#strata'), seg(p, .48, .5));
+    probes.forEach((pr, i) => {
+      show(pr.g, seg(p, .49 + i * .01, .495 + i * .01));
+      pr.r.setAttribute('height', (430 * easeOut(seg(p, .495 + i * .012, .525 + i * .012))).toFixed(1));
+    });
+    $('#traceClipR').setAttribute('width', (1000 * easeOut(seg(p, .535, .585))).toFixed(1));
+    sectFlow.classList.toggle('on', p > .585);
+    show(sTagHigh, seg(p, .55, .56) * (1 - seg(p, .615, .63)));
+    show(sTagLow, seg(p, .575, .585) * (1 - seg(p, .615, .63)));
+    show(sTagGap, seg(p, .595, .605));
+  }
+  $('#unservedRow').classList.toggle('on', p > .595);
+  $('#nUnserved').textContent = fmt(DATA.unconnected_units * easeOut(seg(p, .595, .625)));
+
+  // 4 · the fix: the dim street warms up as the gold main is laid toward the new blocks
+  if (vis(shots.fix, seg(p, .625, .655))) {
+    const k = easeIO(seg(p, .64, .8));
+    cam(shots.fix, lerp(900, 975, k) - mx * 25, lerp(560, 380, k), lerp(1.28, 1.12, k) + .008 * Math.sin(t / 3300) * idle);
+    const draw = easeIO(seg(p, .66, .73)), warm = seg(p, .7, .77);
+    $('#extCore').setAttribute('stroke-dashoffset', (1 - draw).toFixed(4));
+    $('#extGlow').setAttribute('stroke-dashoffset', (1 - draw).toFixed(4));
+    $('#extFlow').classList.toggle('on', draw > .99);
+    fixImg.style.filter = `brightness(${(.5 + .5 * warm).toFixed(3)}) saturate(${(.35 + .75 * warm).toFixed(3)})`;
+    show($('#fixWarm'), warm * .6);
+    show($('#fixTag'), seg(p, .735, .75));
+  }
+  $('#nKm').textContent = (DATA.new_pipe_km * easeOut(seg(p, .66, .76))).toFixed(1);
+
+  // 5 · the street shrinks away into the city
+  const q = easeIO(seg(p, .8, .87));
+  wrap.style.transform = `scale(${(1 - .62 * q).toFixed(4)})`;
+  wrap.style.opacity = (1 - seg(p, .805, .845)).toFixed(3);
+  wrap.style.borderRadius = (q * 24) + 'px';
+  wrap.style.overflow = q > 0 ? 'hidden' : '';
+  wrap.style.visibility = p > .85 ? 'hidden' : 'visible';
+  cityAlpha = seg(p, .8, .86);
+  cv.style.opacity = cityAlpha.toFixed(3);
+  $('#cityBg').style.opacity = (cityAlpha * .55).toFixed(3);
+  $('#cityBg').style.transform = `scale(${(1.08 - .06 * seg(p, .8, 1)).toFixed(4)})`;
+  cityReveal = easeOut(seg(p, .83, .93));
+  extReveal = easeIO(seg(p, .925, .975));
+  labelEls.forEach(l => l.style.opacity = (seg(p, .86, .9) * .9).toFixed(2));
+  $('#cityLegend').style.opacity = seg(p, .87, .9).toFixed(2);
+
+  // chapter cards
+  chapters.forEach(c => {
+    const a = +c.dataset.a, b = +c.dataset.b, f = .022;
+    const v = Math.min(clamp((p - a) / f), 1 - clamp((p - b + f) / f));
+    (c.firstElementChild && c.firstElementChild.classList.contains('card') ? c.firstElementChild : c).style.opacity = v.toFixed(3);
+    c.style.visibility = v <= 0 ? 'hidden' : 'visible';
+    const dy = (1 - v) * 18 * (p < a + f ? 1 : -1);
+    c.style.translate = `0 ${dy.toFixed(1)}px`;
+    c.classList.toggle('on', v > .5);
+  });
+
+
+  // callout: the chamber photo drifts as it passes
+  const cb = $('#calloutBg').getBoundingClientRect();
+  if (cb.bottom > 0 && cb.top < innerHeight) $('#calloutBg').style.transform = `translate3d(0, ${(((cb.top + cb.height / 2) / innerHeight - .5) * -40 * idle).toFixed(1)}px, 0) scale(1.06)`;
+}
+
+let mxT = 0, myT = 0;
+stage.addEventListener('pointermove', e => { mxT = e.clientX / innerWidth - .5; myT = e.clientY / innerHeight - .5; });
+
+/* loop: always running so the photos keep breathing; it only touches what's on screen */
+function frame(t) {
+  P = progress();
+  mouseX += (mxT - mouseX) * .06; mouseY += (myT - mouseY) * .06;
+  if (story.getBoundingClientRect().bottom > 0 || $('#calloutBg').getBoundingClientRect().top < innerHeight) render(t);
+  if (cityAlpha > 0) drawCity(t);
+  requestAnimationFrame(frame);
+}
+function resize() { SW = stage.clientWidth; SH = stage.clientHeight; layoutPills(SW / SH < 1); sizeCity(); }
+addEventListener('resize', resize);
+
+/* data */
+function applyData() {
+  $$('.vTotal').forEach(n => n.textContent = fmt(DATA.total_units));
+  $$('.vUnserved').forEach(n => n.textContent = fmt(DATA.unconnected_units));
+  $$('.vKm').forEach(n => n.textContent = (+DATA.new_pipe_km).toFixed(1));
+  $$('.sample-flag').forEach(n => n.hidden = !DATA.sample);
+}
+fetch(SUMMARY_URL).then(r => r.ok ? r.json() : Promise.reject()).then(s => {
+  if (s && s.total_units != null) Object.assign(DATA, { total_units: s.total_units, unconnected_units: s.unconnected_units, new_pipe_km: s.new_pipe_km, sample: false });
+}).catch(() => {}).finally(applyData);
+
+buildCity(); resize(); applyData();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
