@@ -1,0 +1,61 @@
+{
+  "planned_units": 17912,
+  "residents": 48363,
+  "new_peak_pt_trips": 2029,
+  "proposed_routes": 3,
+  "buses_required": 8,
+  "new_primary_pupils": 3582,
+  "new_secondary_pupils": 2149,
+  "water_extension_km": 4.592,
+  "water_cost_eur": 3150413,
+  "by_status": {
+    "granted": {
+      "count": 41,
+      "units": 16474
+    },
+    "pending": {
+      "count": 4,
+      "units": 1438
+    }
+  },
+  "sources": {
+    "planning": {
+      "name": "NPAD planning register (unit counts parsed from text)",
+      "count": 45,
+      "error": null,
+      "official": true
+    },
+    "network": {
+      "name": "Inferred water network (OSM + DCC gullies)",
+      "count": 8418,
+      "error": null,
+      "official": false
+    },
+    "osm_stops": {
+      "name": "OpenStreetMap bus stops (frequencies synthetic)",
+      "count": 4897,
+      "error": null,
+      "official": false
+    },
+    "osm_rail": {
+      "name": "OpenStreetMap rail / Luas",
+      "count": 1652,
+      "error": null,
+      "official": false
+    },
+    "osm_schools": {
+      "name": "OpenStreetMap schools (enrolments synthetic)",
+      "count": 492,
+      "error": null,
+      "official": false
+    },
+    "mapillary": {
+      "name": "Mapillary detections",
+      "count": 0,
+      "error": "MAPILLARY_TOKEN not set",
+      "official": false
+    }
+  },
+  "generated_at": "2026-10-04T12:26:28+00:00",
+  "note": "MOCK dataset: real sites and OSM features, synthetic frequencies/enrolments, prototype assumptions"
+}

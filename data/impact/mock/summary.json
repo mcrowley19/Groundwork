@@ -1,0 +1,28 @@
+{
+  "planned_units": 3153,
+  "residents": 8671,
+  "new_peak_pt_trips": 358.1,
+  "proposed_routes": 3,
+  "buses_required": 6,
+  "new_primary_pupils": 1040.5,
+  "new_secondary_pupils": 722.0,
+  "water_extension_km": 2.254,
+  "water_cost_eur": 1126953,
+  "by_status": {
+    "granted": {
+      "developments": 7,
+      "units": 1108
+    },
+    "pending": {
+      "developments": 5,
+      "units": 2045
+    }
+  },
+  "sources": {
+    "mock": {
+      "status": "ok",
+      "records": 12
+    }
+  },
+  "generated_at": "2026-10-04T12:33:00+00:00"
+}

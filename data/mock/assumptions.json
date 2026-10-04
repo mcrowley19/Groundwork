@@ -1,0 +1,156 @@
+[
+  {
+    "key": "occupancy",
+    "label": "Residents per dwelling",
+    "value": 2.7,
+    "unit": "persons",
+    "source_note": "Uisce Éireann IW-CDS-5020-03 §3.7.2 design occupancy"
+  },
+  {
+    "key": "site_area_per_unit",
+    "label": "Site area per unit (footprint rectangle)",
+    "value": 90,
+    "unit": "m²",
+    "source_note": "Prototype assumption (~110 units/ha). NPAD has no site boundary, so footprints are generated"
+  },
+  {
+    "key": "water_connect_m",
+    "label": "Connected if within",
+    "value": 50,
+    "unit": "m",
+    "source_note": "Pipeline stage 4 threshold to the nearest served edge of the inferred network"
+  },
+  {
+    "key": "water_route_factor",
+    "label": "Pipe route length ÷ straight-line distance",
+    "value": 1.25,
+    "unit": "×",
+    "source_note": "Prototype assumption for street-following routes"
+  },
+  {
+    "key": "water_cost_100",
+    "label": "Installed cost, 100 mm main",
+    "value": 450,
+    "unit": "€/m",
+    "source_note": "Prototype assumption, urban open-cut"
+  },
+  {
+    "key": "water_cost_150",
+    "label": "Installed cost, 150 mm main",
+    "value": 550,
+    "unit": "€/m",
+    "source_note": "Prototype assumption, urban open-cut"
+  },
+  {
+    "key": "water_cost_200",
+    "label": "Installed cost, 200 mm main",
+    "value": 700,
+    "unit": "€/m",
+    "source_note": "Prototype assumption, urban open-cut"
+  },
+  {
+    "key": "water_cost_250",
+    "label": "Installed cost, ≥ 250 mm main",
+    "value": 900,
+    "unit": "€/m",
+    "source_note": "Prototype assumption, urban open-cut"
+  },
+  {
+    "key": "peak_trip_rate",
+    "label": "Peak-hour trips per resident",
+    "value": 0.12,
+    "unit": "trips/h",
+    "source_note": "Prototype assumption in the range of TII/TRICS residential peak rates"
+  },
+  {
+    "key": "pt_mode_share",
+    "label": "Public transport mode share, new residents",
+    "value": 0.35,
+    "unit": "share",
+    "source_note": "Prototype assumption; Census 2022 Dublin commuting mode share is ~25–30%"
+  },
+  {
+    "key": "frequent_bus",
+    "label": "'Frequent' stop threshold",
+    "value": 6,
+    "unit": "buses/h",
+    "source_note": "BusConnects spine-level frequency, prototype threshold"
+  },
+  {
+    "key": "walk_stop_m",
+    "label": "Walk distance to a bus stop",
+    "value": 400,
+    "unit": "m",
+    "source_note": "DMURS / common planning guidance"
+  },
+  {
+    "key": "walk_frequent_m",
+    "label": "Walk distance to a frequent stop",
+    "value": 800,
+    "unit": "m",
+    "source_note": "BusConnects catchment convention"
+  },
+  {
+    "key": "walk_rail_m",
+    "label": "Walk distance to rail / Luas",
+    "value": 1000,
+    "unit": "m",
+    "source_note": "NTA rail catchment convention"
+  },
+  {
+    "key": "bus_speed",
+    "label": "Average bus speed, proposed routes",
+    "value": 20,
+    "unit": "km/h",
+    "source_note": "Prototype assumption for urban routes"
+  },
+  {
+    "key": "bus_layover",
+    "label": "Layover per round trip",
+    "value": 10,
+    "unit": "min",
+    "source_note": "Prototype assumption"
+  },
+  {
+    "key": "bus_headway",
+    "label": "Headway, proposed routes",
+    "value": 15,
+    "unit": "min",
+    "source_note": "Prototype assumption"
+  },
+  {
+    "key": "primary_pupils_per_unit",
+    "label": "Primary pupils per new dwelling",
+    "value": 0.2,
+    "unit": "pupils",
+    "source_note": "Prototype assumption; Department of Education uses 12% of new housing population"
+  },
+  {
+    "key": "secondary_pupils_per_unit",
+    "label": "Secondary pupils per new dwelling",
+    "value": 0.12,
+    "unit": "pupils",
+    "source_note": "Prototype assumption; Department of Education uses 8.5% of new housing population"
+  },
+  {
+    "key": "school_primary_radius",
+    "label": "Primary school catchment",
+    "value": 1500,
+    "unit": "m",
+    "source_note": "Prototype assumption"
+  },
+  {
+    "key": "school_secondary_radius",
+    "label": "Secondary school catchment",
+    "value": 3000,
+    "unit": "m",
+    "source_note": "Prototype assumption"
+  },
+  {
+    "key": "school_headroom",
+    "label": "Spare capacity over current enrolment",
+    "value": 0.12,
+    "unit": "share",
+    "source_note": "Prototype assumption; enrolments here are synthetic, not DoE returns"
+  }
+]

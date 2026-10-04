@@ -1,0 +1,213 @@
+{
+  "total_units": 0,
+  "unconnected_units": 0,
+  "new_pipe_km": 0.0,
+  "top_areas": [],
+  "sources": {
+    "hydrants_osm": 1592,
+    "mapillary": 0,
+    "planning": 25388,
+    "osm_water_assets": 3431,
+    "dcc_gully_streets": 3413,
+    "census_small_areas": 5576
+  },
+  "generated_at": "2026-10-04T12:10:56+00:00",
+  "est_new_residents": 0,
+  "new_avg_daily_demand_m3": 0.0,
+  "new_peak_flow_lps": 0.0,
+  "new_pipe_km_by_bore_mm": {},
+  "largest_new_main_mm": null,
+  "existing": {
+    "small_areas": 5536,
+    "population_2022": 1603469,
+    "households_2022": 567293,
+    "household_growth_pct": 0.0
+  },
+  "assets_by_kind": {
+    "hydrant": 1592,
+    "manhole_unspecified": 937,
+    "water_storage_tank": 296,
+    "drinking_fountain": 109,
+    "sewage_pumping_station": 62,
+    "reservoir_covered": 57,
+    "sewer_pipeline": 57,
+    "water_pumping_station": 55,
+    "water_well": 53,
+    "water_works": 46,
+    "manhole_drain": 42,
+    "wastewater_plant": 33,
+    "water_pipeline": 32,
+    "water_tower": 31,
+    "manhole_sewer": 20,
+    "manhole_water": 7,
+    "manhole_pump": 1,
+    "manhole_unknown": 1
+  },
+  "context": {
+    "source": "Uisce Éireann open data (CC BY 4.0) and capacity registers",
+    "ringsend_wwtp_capacity_pe": 1640000,
+    "dublin_wwtps": 14,
+    "dublin_dma_count": 664,
+    "dublin_wps_count": 93,
+    "dublin_wwps_count": 149,
+    "dublin_reservoirs_count": 40,
+    "water_supply_capacity_register": [
+      {
+        "Region": "EM",
+        "County": "Dublin City",
+        "Settlement Name": "Dublin City and suburbs",
+        "Water Resource Zone Name (WRZ)": "Greater Dublin Area",
+        "Indication of available capacity to support 2035 population targets": "Potential Capacity Available - LoS improvement required"
+      },
+      {
+        "Region": "EM",
+        "County": "Dun Laoghaire-Rathdown",
+        "Settlement Name": "Glencullen",
+        "Water Resource Zone Name (WRZ)": "Greater Dublin Area",
+        "Indication of available capacity to support 2035 population targets": "Potential Capacity Available - LoS improvement required"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement Name": "Rathcoole",
+        "Water Resource Zone Name (WRZ)": "Greater Dublin Area",
+        "Indication of available capacity to support 2035 population targets": "Potential Capacity Available - LoS improvement required"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement Name": "Saggart",
+        "Water Resource Zone Name (WRZ)": "Greater Dublin Area",
+        "Indication of available capacity to support 2035 population targets": "Potential Capacity Available - LoS improvement required"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement Name": "Newcastle",
+        "Water Resource Zone Name (WRZ)": "Greater Dublin Area",
+        "Indication of available capacity to support 2035 population targets": "Potential Capacity Available - LoS improvement required"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement Name": "Brittas",
+        "Water Resource Zone Name (WRZ)": "Brittas",
+        "Indication of available capacity to support 2035 population targets": "Capacity Available"
+      }
+    ],
+    "wastewater_capacity_register": [
+      {
+        "Region": "EM",
+        "County": "Dublin City",
+        "Settlement": "Dublin City and Suburbs",
+        "Wastewater Treatment Plant (WWTP)": "Ringsend WWTP ",
+        "Reg #": "D0034",
+        "Indication of Available Capacity": "Green",
+        "WWTP Project Planned/Underway": "Yes"
+      },
+      {
+        "Region": "EM",
+        "County": "DLR",
+        "Settlement": "Dun Laoghaire / Rathdown",
+        "Wastewater Treatment Plant (WWTP)": "Shanganagh WWTP",
+        "Reg #": "D0038",
+        "Indication of Available Capacity": "Green",
+        "WWTP Project Planned/Underway": " "
+      },
+      {
+        "Region": "EM",
+        "County": "DLR",
+        "Settlement": "Dun Laoghaire / Rathdown",
+        "Wastewater Treatment Plant (WWTP)": "Ringsend WWTP ",
+        "Reg #": "D0034",
+        "Indication of Available Capacity": "Green",
+        "WWTP Project Planned/Underway": "Yes"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement": "Dublin City and Suburbs",
+        "Wastewater Treatment Plant (WWTP)": "Ringsend WWTP",
+        "Reg #": "D0034",
+        "Indication of Available Capacity": "Green",
+        "WWTP Project Planned/Underway": "Yes"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement": "Rathcoole",
+        "Wastewater Treatment Plant (WWTP)": "Ringsend WWTP ",
+        "Reg #": "D0034",
+        "Indication of Available Capacity": "Green",
+        "WWTP Project Planned/Underway": "Yes"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement": "Saggart",
+        "Wastewater Treatment Plant (WWTP)": "Ringsend WWTP ",
+        "Reg #": "D0034",
+        "Indication of Available Capacity": "Green",
+        "WWTP Project Planned/Underway": "Yes"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement": "Newcastle",
+        "Wastewater Treatment Plant (WWTP)": "Ringsend WWTP ",
+        "Reg #": "D0034",
+        "Indication of Available Capacity": "Green",
+        "WWTP Project Planned/Underway": "Yes"
+      },
+      {
+        "Region": "EM",
+        "County": "South Dublin",
+        "Settlement": "Brittas",
+        "Wastewater Treatment Plant (WWTP)": "Ringsend WWTP ",
+        "Reg #": "D0034",
+        "Indication of Available Capacity": "Green",
+        "WWTP Project Planned/Underway": "Yes"
+      }
+    ]
+  },
+  "assumptions": {
+    "reference": "Uisce Éireann IW-CDS-5020-03 Rev 2 (2020)",
+    "per_capita_l_per_day": 150,
+    "design_occupancy": 2.7,
+    "peak_week_factor": 1.25,
+    "peak_factor": 5.0,
+    "velocity_range_mps": [
+      0.3,
+      1.5
+    ],
+    "min_public_main_mm": 100,
+    "typical_main_table": [
+      {
+        "max_dwellings": 5,
+        "nominal_bore_mm": 50,
+        "pe_outside_diameter_mm": "up to 63"
+      },
+      {
+        "max_dwellings": 40,
+        "nominal_bore_mm": 80,
+        "pe_outside_diameter_mm": "90"
+      },
+      {
+        "max_dwellings": 100,
+        "nominal_bore_mm": 100,
+        "pe_outside_diameter_mm": "110/125"
+      },
+      {
+        "max_dwellings": 300,
+        "nominal_bore_mm": 150,
+        "pe_outside_diameter_mm": "160/180"
+      },
+      {
+        "max_dwellings": 700,
+        "nominal_bore_mm": 200,
+        "pe_outside_diameter_mm": "225"
+      }
+    ],
+    "note": "Sizes are the Code's guidance values for the dwellings served, not surveyed pipes; the Code requires a hydraulic assessment for real design."
+  }
+}
