@@ -1,0 +1,11 @@
+# Dependencies for serving the dashboard only (what Vercel installs).
+# The pipeline needs the full requirements.txt.
+[project]
+name = "pipes-cope"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "openai>=1.40",
+    "python-dotenv>=1.0",
+]

@@ -37,11 +37,27 @@ button { cursor: pointer; }
 /* ---- app grid --------------------------------------------------------- */
 #app { display: grid; height: 100vh; width: 100vw; gap: 1px; background: var(--border);
   grid-template-rows: var(--top-h) var(--kpi-h) minmax(0,1fr) var(--bottom-h);
-  grid-template-columns: var(--left-w) minmax(0,1fr) var(--right-w);
-  grid-template-areas: "top top top" "kpi kpi kpi" "left map right" "bottom bottom bottom"; }
-#topbar { grid-area: top; } #kpis { grid-area: kpi; } #left { grid-area: left; }
-#map-wrap { grid-area: map; } #right { grid-area: right; } #bottom { grid-area: bottom; }
-#left, #right { display: flex; flex-direction: column; gap: 1px; min-height: 0; background: var(--border); }
+  grid-template-columns: minmax(0,1fr);
+  grid-template-areas: "top" "kpi" "mid" "bottom"; }
+#topbar { grid-area: top; } #kpis { grid-area: kpi; } #mid { grid-area: mid; } #bottom { grid-area: bottom; }
+#mid { position: relative; min-height: 0; --l-off: var(--left-w); --r-off: var(--right-w); --handle: 22px; }
+#mid.l-closed { --l-off: var(--handle); } #mid.r-closed { --r-off: var(--handle); }
+#map-wrap { position: absolute; inset: 0; }
+#left, #right { position: absolute; top: 0; bottom: 0; z-index: 6; display: flex; flex-direction: column; gap: 1px; background: rgba(30,39,51,.6);
+  transition: transform 220ms var(--ease); }
+#left { left: 0; width: var(--left-w); border-right: 1px solid var(--border); }
+#right { right: 0; width: var(--right-w); border-left: 1px solid var(--border); }
+#mid.l-closed #left { transform: translateX(calc(-1 * var(--left-w))); }
+#mid.r-closed #right { transform: translateX(var(--right-w)); }
+/* frosted glass: the map shows through the side columns */
+#left .panel, #right .panel { background: rgba(16,22,31,.68); backdrop-filter: blur(14px) saturate(130%); -webkit-backdrop-filter: blur(14px) saturate(130%); }
+#left .state, #right .state, #left thead th, #right thead th { background: rgba(16,22,31,.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+#left tbody tr:hover td, #right .alert:hover { background: rgba(230,237,243,.05); }
+.handle { position: absolute; top: 50%; width: var(--handle); height: 72px; transform: translateY(-50%); z-index: 7; display: flex; align-items: center; justify-content: center;
+  background: rgba(16,22,31,.85); border: 1px solid var(--border); color: var(--text-2); font: 500 10px/1 var(--mono); cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.handle:hover { color: var(--accent); border-color: var(--accent); }
+.handle span { display: block; writing-mode: vertical-rl; letter-spacing: .14em; text-transform: uppercase; font-size: 9px; color: var(--muted); margin-top: 6px; }
+#left .handle { right: calc(-1 * var(--handle) - 1px); border-left: 0; } #right .handle { left: calc(-1 * var(--handle) - 1px); border-right: 0; }
 #bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); min-height: 0; }
 
 /* ---- panels ----------------------------------------------------------- */
@@ -118,10 +134,10 @@ tbody tr:hover td { background: #141b25; }
 tbody tr.sel td { background: var(--accent-dim); }
 tbody tr.sel td:first-child, tbody tr.hl td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
 tbody tr.off { opacity: .4; }
-td { padding: 5px 5px; vertical-align: middle; font-size: 12px; white-space: nowrap; }
-td .nm { display: block; font-weight: 500; max-width: 104px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
-td .id { display: block; font-size: 10px; color: var(--muted); letter-spacing: .04em; max-width: 104px; overflow: hidden; text-overflow: ellipsis; }
-.badge { display: inline-flex; align-items: center; gap: 4px; font: 500 8px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 4px 5px; border: 1px solid; border-radius: var(--r); white-space: nowrap; }
+td { padding: 7px 5px; vertical-align: middle; font-size: 12px; white-space: nowrap; }
+td .nm { display: block; font-weight: 500; max-width: 130px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; font-family: var(--mono); }
+td .id { display: block; font-size: 10px; color: var(--muted); letter-spacing: .02em; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+.badge { display: inline-flex; align-items: center; gap: 4px; font: 500 8px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 4px 4px; border: 1px solid; border-radius: var(--r); white-space: nowrap; }
 .badge::before { content: ""; width: 5px; height: 5px; background: currentColor; }
 .badge.nominal { color: var(--nominal); border-color: rgba(63,182,139,.45); }
 .badge.watch { color: var(--watch); border-color: rgba(227,179,65,.45); }
@@ -185,7 +201,7 @@ td .id { display: block; font-size: 10px; color: var(--muted); letter-spacing: .
 .alert.critical .h b { color: var(--critical); } .alert.watch .h b { color: var(--watch); } .alert.info .h b { color: var(--text-2); }
 .alert .h span { color: var(--muted); font-weight: 400; letter-spacing: .04em; }
 .alert .h span i { display: inline-block; width: 6px; height: 6px; margin-left: 6px; vertical-align: 0; }
-.alert .t { font-size: 11px; margin-top: 3px; color: var(--text); line-height: 1.35; white-space: normal; }
+.alert .t { font-size: 12px; margin-top: 3px; color: var(--text); line-height: 1.35; white-space: normal; }
 .alert .t .num { color: var(--text); }
 
 /* ---- scenario --------------------------------------------------------- */
@@ -225,16 +241,17 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
 #query-form kbd { font: 400 9px/1 var(--mono); color: var(--muted); border: 1px solid var(--border); padding: 3px 5px; letter-spacing: .08em; }
 
 /* ---- map -------------------------------------------------------------- */
-#map-wrap { position: relative; background: var(--bg); min-width: 0; min-height: 0; }
+#map-wrap { background: var(--bg); min-width: 0; min-height: 0; }
 #st-map { background: rgba(16,22,31,.6); pointer-events: none; }
 #map { position: absolute; inset: 0; }
 .maplibregl-ctrl-attrib { font: 400 9px/1 var(--mono) !important; background: rgba(16,22,31,.85) !important; color: var(--muted) !important; letter-spacing: .02em; }
 .maplibregl-ctrl-attrib a { color: var(--text-2) !important; }
 .maplibregl-ctrl-scale { background: rgba(16,22,31,.85) !important; border: 1px solid var(--text-2) !important; border-top: 0 !important; color: var(--text-2) !important; font: 400 9px/1.6 var(--mono) !important; height: 14px !important; padding: 0 5px !important; }
-.maplibregl-ctrl-bottom-left { bottom: 42px !important; }
+.maplibregl-ctrl-bottom-left { bottom: 42px !important; left: var(--l-off) !important; }
+.maplibregl-ctrl-bottom-right { right: var(--r-off) !important; }
 .ov { position: absolute; z-index: 2; background: rgba(16,22,31,.92); border: 1px solid var(--border); font-family: var(--mono); }
 .ov .ovh { font: 500 9px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 7px 10px 6px; border-bottom: 1px solid var(--border); }
-#layers { top: 46px; left: 10px; width: 190px; }
+#layers { top: 46px; left: calc(var(--l-off) + 10px); width: 150px; transition: left 220ms var(--ease); }
 .sw { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; font: 400 10px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); cursor: pointer; user-select: none; }
 .sw:hover { color: var(--text); }
 .sw .k { width: 22px; height: 11px; border: 1px solid var(--muted); position: relative; flex: none; }
@@ -242,17 +259,17 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
 .sw.on { color: var(--text); } .sw.on .k { border-color: var(--accent); } .sw.on .k::after { left: 12px; background: var(--accent); }
 .sw.busy .k::after { animation: blink 1s steps(2) infinite; }
 .sw .sysdot { display: inline-block; width: 6px; height: 6px; margin-right: 6px; vertical-align: 0; }
-#systems { top: 10px; left: 10px; display: flex; }
+#systems { top: 10px; left: calc(var(--l-off) + 10px); display: flex; transition: left 220ms var(--ease); }
 #systems button { font: 500 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 8px 11px; color: var(--text-2); border-right: 1px solid var(--border); display: flex; align-items: center; gap: 7px; }
 #systems button:last-child { border-right: 0; }
 #systems button i { width: 6px; height: 6px; background: var(--text-2); }
 #systems button.on { color: var(--text); background: #182230; box-shadow: inset 0 -2px 0 var(--accent); }
 #systems button kbd { color: var(--muted); font-size: 9px; }
-#coords { left: 10px; bottom: 10px; padding: 6px 10px; font-size: 10px; color: var(--text-2); letter-spacing: .04em; line-height: 1.5; min-width: 200px; }
+#coords { left: calc(var(--l-off) + 10px); bottom: 10px; transition: left 220ms var(--ease); padding: 6px 10px; font-size: 10px; color: var(--text-2); letter-spacing: .04em; line-height: 1.5; min-width: 200px; }
 #coords b { color: var(--muted); font-weight: 400; display: inline-block; width: 44px; }
 #coords span { color: var(--text); }
-#legend { right: 10px; bottom: 28px; width: 300px; }
-#legend .rows { padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 5px; font: 400 9px/1 var(--mono); letter-spacing: .03em; color: var(--text-2); }
+#legend { right: calc(var(--r-off) + 10px); bottom: 28px; width: 232px; transition: right 220ms var(--ease); }
+#legend .rows { padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 6px; font: 400 10px/1 var(--mono); letter-spacing: .03em; color: var(--text-2); }
 .lg { display: flex; align-items: center; gap: 8px; }
 .lg i.sw- { flex: none; width: 14px; height: 10px; }
 .lg i.sq { flex: none; width: 9px; height: 9px; margin: 0 2.5px; }
@@ -270,7 +287,7 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
 #tooltip .desc { color: var(--muted); margin-top: 4px; font-family: var(--sans); font-size: 10px; line-height: 1.35; white-space: normal; }
 #map-title { position: absolute; top: 10px; right: 10px; z-index: 2; text-align: right; font: 400 8px/1.5 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 #map-title b { color: var(--text-2); font-weight: 500; }
-#cam { position: absolute; right: 10px; top: 44px; z-index: 2; }
+#cam { position: absolute; right: calc(var(--r-off) + 10px); top: 10px; z-index: 2; transition: right 220ms var(--ease); }
 #cam button { font: 500 9px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); border: 1px solid var(--border); background: rgba(16,22,31,.92); padding: 5px 8px; }
 #cam button:hover { color: var(--accent); border-color: var(--accent); }
 
@@ -293,7 +310,7 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
   <header id="topbar">
     <div class="sys"><span class="mark"></span><h1>INFRASTRUCTURE IMPACT MONITOR — DUBLIN REGION</h1></div>
     <div class="tb-cell"><span class="lbl">UTC</span><span class="val" id="clock">--:--:--</span></div>
-    <div class="tb-cell"><span class="lbl">Data generated</span><span class="val dim" id="fresh">—</span></div>
+    <div class="tb-cell"><span class="lbl">Data</span><span class="val dim" id="fresh">—</span></div>
     <div class="tb-cell" id="tb-scen-cell"><span class="lbl">Scenario</span><span class="val dim" id="tb-scen">—</span></div>
     <div id="sources"></div>
     <button class="tb-btn" id="btn-assump" type="button"><span>Assumptions</span></button>
@@ -302,7 +319,9 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
 
   <section id="kpis"></section>
 
+  <div id="mid">
   <aside id="left">
+    <button class="handle" id="h-left" type="button" title="Collapse / expand ([)">‹<span>01–02</span></button>
     <div class="panel" style="flex: 1 1 60%;">
       <div class="ph"><h2><b>01 //</b>Priority developments</h2><span class="meta" id="tbl-meta"></span></div>
       <div class="pb scroll" id="tbl-body">
@@ -321,8 +340,8 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
 
   <main id="map-wrap" class="panel">
     <div id="map"></div>
-    <div id="map-title"><b>Overhead 3D</b> · EPSG:4326<br>basemap © OpenFreeMap / OpenMapTiles / OSM</div>
-    <div id="cam"><button type="button" id="btn-reset" title="Reset camera (R)">Reset cam · R</button></div>
+    
+    <div id="cam"><button type="button" id="btn-reset" title="Reset camera (R)">Reset · R</button></div>
     <div class="ov" id="systems"></div>
     <div class="ov" id="layers"><div class="ovh">Layers</div></div>
     <div class="ov" id="coords">
@@ -335,6 +354,7 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
   </main>
 
   <aside id="right">
+    <button class="handle" id="h-right" type="button" title="Collapse / expand (])">›<span>03–04</span></button>
     <div class="panel" style="flex: 0 0 auto;">
       <div class="ph"><h2><b>03 //</b>Development detail</h2><span class="meta" id="detail-meta"></span></div>
       <div class="pb" style="min-height: 232px;"><div id="detail-body"></div><div class="state" id="st-detail"></div></div>
@@ -344,6 +364,7 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
       <div class="pb scroll" id="alerts"><div class="state" id="st-alerts"></div></div>
     </div>
   </aside>
+  </div>
 
   <footer id="bottom">
     <div class="panel">
@@ -358,14 +379,14 @@ input[type=range]:disabled::-webkit-slider-thumb { background: var(--muted); }
           <div class="seg" id="mode"><button type="button" data-m="baseline">Baseline</button><button type="button" data-m="projected" class="on">Projected</button></div>
           <div class="sl-head"><span>Effective units&nbsp;</span><span class="readout" id="eff-units">—</span></div>
         </div>
-        <div class="sc-note" id="sc-note"></div>
+        
       </div></div>
     </div>
     <div class="panel">
       <div class="ph"><h2><b>06 //</b>Analyst query</h2><span class="meta" id="query-meta"></span></div>
       <div class="pb" style="display:flex; flex-direction:column;">
         <div id="query-log"></div>
-        <form id="query-form"><span class="prompt">&gt;</span><input id="query" type="text" autocomplete="off" spellcheck="false" placeholder="ask a question about infrastructure impact..."><kbd>/</kbd></form>
+        <form id="query-form"><span class="prompt">&gt;</span><input id="query" type="text" autocomplete="off" spellcheck="false" placeholder="ask about capacity, routes, schools..."><kbd>/</kbd></form>
       </div>
     </div>
   </footer>
@@ -492,7 +513,7 @@ function prepare() {
     pt: f.geometry?.type === 'Point' ? f.geometry.coordinates : centroidOf(f.geometry), enrolment: +f.properties.enrolment || 0,
     newPupils: +f.properties.projected_new_pupils || 0, ratio: +f.properties.pressure_ratio || 0 }));
   S.schoolById = new Map(S.schools.map(s => [s.id, s]));
-  S.rails = feats('rails').map(f => ({ id: String(f.properties.id), mode: f.properties.mode || 'rail', name: f.properties.name || '', geom: f.geometry }));
+  S.rails = feats('rails').map(f => ({ id: String(f.properties.id), mode: f.geometry?.type === 'Point' ? 'station' : (f.properties.mode || 'rail'), name: f.properties.name || '', geom: f.geometry }));
   S.devs = feats('devs').map(f => {
     const p = f.properties || {}, w = p.water || {}, t = p.transport || {}, sc = p.schools || {}, scores = p.scores || {};
     const centroid = p.centroid || (f.geometry?.type === 'Point' ? f.geometry.coordinates : centroidOf(f.geometry));
@@ -504,12 +525,16 @@ function prepare() {
       centroid, geom, bounds: geomBounds(geom),
       water: { connected: w.connected ?? p.connected ?? null, dist: w.distance_to_network_m ?? p.distance_to_network_m ?? null,
                route: w.route_length_m ?? p.route_length_m ?? null, cost: w.est_cost_eur ?? p.est_cost_eur ?? null, bore: w.required_main_mm ?? null },
-      transport: { cls: t.class || null, stop: t.nearest_stop_m ?? null, stopId: t.nearest_stop_id ? String(t.nearest_stop_id) : null,
+      transport: { cls: t.class ? ({ served: 'served', weak: 'weak', unserved: 'unserved', rail: 'served', frequent_bus: 'served', bus: 'weak', car_dependent: 'unserved' }[t.class] || t.class) : null, stop: t.nearest_stop_m ?? null, stopId: t.nearest_stop_id ? String(t.nearest_stop_id) : null,
                    fstop: t.nearest_frequent_stop_m ?? null, fstopId: t.nearest_frequent_stop_id ? String(t.nearest_frequent_stop_id) : null,
                    rail: t.nearest_rail_name || null, railM: t.nearest_rail_m ?? null, residents: t.residents ?? null,
                    trips: t.peak_pt_trips ?? null, routeId: t.proposed_route_id ? String(t.proposed_route_id) : null },
-      schools: { primary: sc.primary_pupils ?? null, secondary: sc.secondary_pupils ?? null, nearP: sc.nearby_primary ?? null, nearS: sc.nearby_secondary ?? null,
-                 flag: sc.pressure_flag || null, worst: sc.worst_pressure_ratio ?? null, ids: (sc.nearby_school_ids || []).map(String) },
+      schools: { primary: sc.primary_pupils ?? null, secondary: sc.secondary_pupils ?? null,
+                 nearP: Array.isArray(sc.nearby_primary) ? sc.nearby_primary.length : sc.nearby_primary ?? null,
+                 nearS: Array.isArray(sc.nearby_secondary) ? sc.nearby_secondary.length : sc.nearby_secondary ?? null,
+                 flag: typeof sc.pressure_flag === 'boolean' ? (sc.pressure_flag ? ((scores.schools ?? 0) >= THRESH.critical ? 'critical' : 'watch') : 'nominal') : (sc.pressure_flag || null),
+                 worst: sc.worst_pressure_ratio ?? sc.pressure_ratio ?? null,
+                 ids: [...(sc.nearby_school_ids || []), ...(Array.isArray(sc.nearby_primary) ? sc.nearby_primary : []), ...(Array.isArray(sc.nearby_secondary) ? sc.nearby_secondary : [])].map(String) },
       scores: { water: scores.water ?? null, transport: scores.transport ?? null, schools: scores.schools ?? null, overall: scores.overall ?? null },
     };
     if (d.scores.overall == null) { const parts = ['water', 'transport', 'schools'].map(k => d.scores[k]).filter(isNum); d.scores.overall = parts.length ? 0.6 * Math.max(...parts) + 0.4 * d3.mean(parts) : null; }
@@ -522,6 +547,7 @@ function prepare() {
     headway: +p.headway_min || 0, buses: +p.buses_required || 0, serves: (p.serves_app_ids || []).map(String), demand: +p.peak_demand || 0, to: p.to_station || '',
     pathSource: p.path_source || 'street network', path: f.geometry?.coordinates || [], bounds: geomBounds(f.geometry) }; });
   S.routeById = new Map(S.routes.map(r => [r.id, r]));
+  fillNearest();
   for (const d of S.devs) if (!d.transport.routeId) { const r = S.routes.find(r => r.serves.includes(d.id)); if (r) d.transport.routeId = r.id; }
   S.exts = feats('exts').map(f => { const p = f.properties || {}; return { id: String(p.edge_id), order: +p.order || 0, length: +p.length_m || 0,
     serves: (p.serves_app_ids || []).map(String), bore: p.nominal_bore_mm || null, cost: p.est_cost_eur ?? null, path: f.geometry?.coordinates || [], street: p.street_name || null }; });
@@ -534,6 +560,27 @@ function prepare() {
     let t = 0; const ts = [0];
     for (let i = 1; i < r.path.length; i++) { t += distM(r.path[i - 1], r.path[i]) / (20 / 3.6); ts.push(t); }
     r.timestamps = ts; r.duration = t;
+  }
+}
+
+function fillNearest() {       // nearest stop, nearest frequent stop and in-catchment schools, when the data has no ids
+  const pr = S.assumptions.get('school_primary_radius')?.value ?? S.assumptions.get('PRIMARY_RADIUS_M')?.value ?? 1500;
+  const sr = S.assumptions.get('school_secondary_radius')?.value ?? S.assumptions.get('POSTPRIMARY_RADIUS_M')?.value ?? 3000;
+  const freq = S.assumptions.get('frequent_bus')?.value ?? S.assumptions.get('FREQ_THRESHOLD')?.value ?? 6;
+  for (const d of S.devs) {
+    if (!isFinite(d.centroid[0])) continue;
+    if (!d.transport.stopId && S.stops.length) {
+      let best = null, bestF = null;
+      for (const s of S.stops) { const m = distM(d.centroid, s.pt); if (!best || m < best.m) best = { s, m }; if (s.freq >= freq && (!bestF || m < bestF.m)) bestF = { s, m }; }
+      if (best) { d.transport.stopId = best.s.id; if (d.transport.stop == null) d.transport.stop = Math.round(best.m); }
+      if (bestF) { d.transport.fstopId = bestF.s.id; if (d.transport.fstop == null) d.transport.fstop = Math.round(bestF.m); }
+    }
+    if (!d.schools.ids.length && S.schools.length) {
+      d.schools.ids = S.schools.filter(s => distM(d.centroid, s.pt) <= (s.level === 'secondary' ? sr : pr)).map(s => s.id);
+      if (d.schools.nearP == null) d.schools.nearP = d.schools.ids.filter(id => S.schoolById.get(id).level !== 'secondary').length;
+      if (d.schools.nearS == null) d.schools.nearS = d.schools.ids.filter(id => S.schoolById.get(id).level === 'secondary').length;
+    }
+    if (d.schools.worst == null && d.schools.ids.length) d.schools.worst = d3.max(d.schools.ids, id => S.schoolById.get(id)?.ratio ?? 0);
   }
 }
 
@@ -574,8 +621,8 @@ function buildAlerts() {
   for (const r of S.rows) {
     if (r.weight <= 0) continue;
     const u = fmtInt(r.units), t = r.transport, w = r.water, s = r.schools;
-    if (t.cls === 'car_dependent' && !t.routeId) push('critical', 'transport', r.id, `critical — ${r.id}`, `<span class="num">${u}</span> units, nearest frequent stop <span class="num">${fmtM(t.fstop)}</span>, no proposed route.`, r.units + 1000);
-    else if (t.cls === 'car_dependent' || t.cls === 'bus') { const route = S.routeById.get(t.routeId); push(route ? 'watch' : 'critical', 'transport', r.id, `${route ? 'watch' : 'critical'} — ${r.id}`, `<span class="num">${u}</span> units, nearest frequent stop <span class="num">${fmtM(t.fstop)}</span>${route ? `; proposed route ${route.id} needs <span class="num">${route.buses}</span> buses (${fmtKm1(route.km)} km)` : '; no proposed route'}.`, r.units + 500); }
+    if (t.cls === 'unserved' && !t.routeId) push('critical', 'transport', r.id, `critical — ${r.id}`, `<span class="num">${u}</span> units, nearest frequent stop <span class="num">${fmtM(t.fstop)}</span>, no proposed route.`, r.units + 1000);
+    else if (t.cls === 'unserved' || t.cls === 'weak') { const route = S.routeById.get(t.routeId); push(route ? 'watch' : 'critical', 'transport', r.id, `${route ? 'watch' : 'critical'} — ${r.id}`, `<span class="num">${u}</span> units, nearest frequent stop <span class="num">${fmtM(t.fstop)}</span>${route ? `; proposed route ${route.id} needs <span class="num">${route.buses}</span> buses (${fmtKm1(route.km)} km)` : '; no proposed route'}.`, r.units + 500); }
     if (w.connected === false && isNum(w.route) && w.route > 500) push('critical', 'water', r.id, `critical — ${r.id}`, `<span class="num">${u}</span> units <span class="num">${fmtM(w.dist)}</span> from the inferred network: <span class="num">${fmtM(w.route)}</span> of new ${w.bore ? w.bore + ' mm ' : ''}main ≈ <span class="num">${fmtEur(w.cost)}</span>.`, r.units + 400);
     else if (w.connected === false && isNum(w.route) && w.route > 150) push('watch', 'water', r.id, `watch — ${r.id}`, `<span class="num">${u}</span> units need <span class="num">${fmtM(w.route)}</span> of new main ≈ <span class="num">${fmtEur(w.cost)}</span>.`, r.units + 200);
     if (s.flag === 'critical') push('critical', 'schools', r.id, `critical — ${r.id}`, s.nearP === 0 ? `<span class="num">${u}</span> units with no primary school within catchment; ≈<span class="num">${fmtInt(s.primary)}</span> primary pupils.` : `≈<span class="num">${fmtInt(s.primary)}</span> primary + <span class="num">${fmtInt(s.secondary)}</span> secondary pupils; worst nearby school at <span class="num">${fmtRatio(s.worst)}</span>× capacity.`, r.units + 300);
@@ -619,20 +666,20 @@ function tickClock() {
   if (g) {
     const age = (Date.now() - new Date(g).getTime()) / 60000;
     const ageTxt = age < 60 ? `${Math.max(0, Math.round(age))}m` : age < 1440 ? `${Math.floor(age / 60)}h ${pad2(Math.round(age % 60))}m` : `${Math.floor(age / 1440)}d ${Math.floor((age % 1440) / 60)}h`;
-    $('#fresh').textContent = `${new Date(g).toISOString().slice(5, 16).replace('T', ' ')}Z · ${ageTxt} ago${S.status?.mock ? ' · MOCK' : ''}`;
+    $('#fresh').textContent = `${new Date(g).toISOString().slice(11, 16)}Z · ${ageTxt} ago${S.status?.mock ? ' · mock' : ''}`;
   } else $('#fresh').textContent = S.raw.summary ? 'unknown' : 'summary.json missing';
 }
 function renderSources() {
   const sum = S.raw.summary?.sources || {}, files = S.status?.files || {};
-  const cnt = v => typeof v === 'number' ? v : (v && typeof v.count === 'number') ? v.count : null;
-  const err = v => (v && typeof v === 'object' && v.error) || null;
+  const cnt = v => typeof v === 'number' ? v : (v && typeof v.count === 'number') ? v.count : (v && typeof v.records === 'number') ? v.records : null;
+  const err = v => (v && typeof v === 'object' && (v.error || (v.status && v.status !== 'ok' ? v.status : null))) || null;
   const missing = f => S.errors[Object.keys(FILES).find(k => FILES[k] === f)] || files[f] === false;
   const chips = [
     { lbl: 'Plan', n: cnt(sum.planning) ?? S.devs.length, err: err(sum.planning), hard: !!missing('developments.geojson'), hint: 'developments.geojson' },
     { lbl: 'Water', n: cnt(sum.network) ?? (S.raw.net ? S.raw.net.features.length : (files['network.geojson'] ? 'on demand' : null)), err: err(sum.network) || S.errors.net, hard: files['network.geojson'] === false || !!S.errors.net, hint: 'network.geojson (loaded when the layer is switched on)' },
-    { lbl: 'Stops', n: cnt(sum.osm_stops) ?? S.stops.length, err: err(sum.osm_stops), hard: !!missing('stops.geojson'), hint: 'stops.geojson' },
-    { lbl: 'Rail', n: cnt(sum.osm_rail) ?? S.rails.length, err: err(sum.osm_rail), hard: !!missing('rail_lines.geojson'), hint: 'rail_lines.geojson' },
-    { lbl: 'Sch', n: cnt(sum.osm_schools) ?? S.schools.length, err: err(sum.osm_schools), hard: !!missing('schools.geojson'), hint: 'schools.geojson' },
+    { lbl: 'Stops', n: cnt(sum.osm_stops ?? sum.stops ?? sum.gtfs) ?? S.stops.length, err: err(sum.osm_stops), hard: !!missing('stops.geojson'), hint: 'stops.geojson' },
+    { lbl: 'Rail', n: cnt(sum.osm_rail ?? sum.rail) ?? S.rails.length, err: err(sum.osm_rail), hard: !!missing('rail_lines.geojson'), hint: 'rail_lines.geojson' },
+    { lbl: 'Sch', n: cnt(sum.osm_schools ?? sum.schools) ?? S.schools.length, err: err(sum.osm_schools), hard: !!missing('schools.geojson'), hint: 'schools.geojson' },
     { lbl: 'Mply', n: cnt(sum.mapillary) ?? 0, err: err(sum.mapillary), hard: false, hint: 'street-level detections' },
   ];
   $('#sources').innerHTML = chips.map(c => {
@@ -654,7 +701,7 @@ const KPI_DEFS = [
   { k: 'cost', code: 'H', lbl: 'Water est. cost', fmt: fmtEur, sys: 'water', est: 'water_cost_100' },
 ];
 function buildKpis() {
-  $('#kpis').innerHTML = KPI_DEFS.map(d => `<div class="kpi" id="kpi-${d.k}"><div class="lbl"><b>${d.code}</b>${d.sys ? `<i style="background:${SYS_HEX[d.sys]}"></i>` : ''}${d.lbl}${d.est ? ` <span class="est" data-a="${d.est}">≈</span>` : ''}</div>
+  $('#kpis').innerHTML = KPI_DEFS.map(d => `<div class="kpi" id="kpi-${d.k}"><div class="lbl">${d.sys ? `<i style="background:${SYS_HEX[d.sys]}"></i>` : ''}${d.lbl}${d.est ? ` ${estTag(d.est)}` : ''}</div>
     <div class="kpi-value"><span class="n">—</span>${d.unit ? `<span class="unit">${d.unit}</span>` : ''}</div><div class="sub">—</div></div>`).join('');
 }
 const prevKpi = {};
@@ -666,11 +713,11 @@ function renderKpis() {
     if (prevKpi[d.k] !== undefined && prevKpi[d.k] !== v) flash(cell);
     prevKpi[d.k] = v;
     const sub = $('.sub', cell), delta = v - b[d.k];
-    if (d.k === 'pupils') { sub.textContent = `${fmtInt(k.pupilsP)} P · ${fmtInt(k.pupilsS)} S`; sub.className = 'sub'; continue; }
-    if (S.scenario.mode === 'baseline') { sub.textContent = 'baseline · granted only'; sub.className = 'sub'; }
+    if (d.k === 'pupils') { sub.textContent = `${fmtInt(k.pupilsP)} primary · ${fmtInt(k.pupilsS)} secondary`; sub.className = 'sub'; continue; }
+    if (S.scenario.mode === 'baseline' || Math.abs(delta) < 0.5) { sub.textContent = ''; sub.className = 'sub'; }
     else {
       const dTxt = d.k === 'ext_m' ? fmtKm(Math.abs(delta)) + ' km' : d.k === 'cost' ? fmtEur(Math.abs(delta)) : fmtInt(Math.abs(delta));
-      sub.textContent = Math.abs(delta) < 0.5 ? '= baseline' : `${delta > 0 ? '+' : '−'}${dTxt} vs baseline`;
+      sub.textContent = `${delta > 0 ? '+' : '−'}${dTxt} pending`;
       sub.className = 'sub' + (delta > 0.5 ? ' up' : '');
     }
   }
@@ -688,7 +735,7 @@ function renderTable() {
   $('#tbl th[data-k=overall]').textContent = S.system === 'all' ? 'Overall' : S.system;
   const tb = $('#tbl tbody');
   tb.innerHTML = rows.map(r => { const sc = sysScore(r), st = statusOf(sc); return `<tr data-id="${esc(r.id)}" class="${r.id === S.selected ? 'sel' : ''}${S.highlight.has(r.id) ? ' hl' : ''}" tabindex="-1">
-    <td><span class="nm" title="${esc(r.address || r.desc)}">${esc(r.id)}</span><span class="id">${esc(r.address || r.type)}</span></td>
+    <td><span class="nm" title="${esc(r.address || r.desc)}">${esc(r.id)}</span></td>
     <td class="num r">${fmtInt(r.units)}</td><td><span class="badge ${r.status}">${r.status}</span></td>
     <td class="c"><span class="sub3">${['water', 'transport', 'schools'].map(s => `<span class="b ${s[0]}" title="${s} ${isNum(r.scores[s]) ? r.scores[s].toFixed(0) : '—'}"><i style="width:${isNum(r.scores[s]) ? r.scores[s].toFixed(0) : 0}%"></i></span>`).join('')}</span></td>
     <td class="r"><span class="ov-score ${st}"><span class="bar"><i style="width:${isNum(sc) ? sc.toFixed(0) : 0}%"></i></span><span class="pv">${isNum(sc) ? sc.toFixed(0) : '—'}</span></span></td></tr>`; }).join('');
@@ -697,7 +744,7 @@ function renderTable() {
     if (prevRow.has(r.id) && prevRow.get(r.id) !== sig) flash(tr);
     prevRow.set(r.id, sig);
   }
-  $('#tbl-meta').textContent = `${rows.length} of ${S.devs.length} · ${S.kpis.critical} critical`;
+  $('#tbl-meta').textContent = `${S.kpis.critical} critical`;
   setState('st-tbl', S.devs.length ? (rows.length ? null : 'empty') : (S.errors.devs ? 'error' : 'empty'),
     S.errors.devs ? 'developments.geojson unavailable' : S.devs.length ? 'No developments in scenario' : 'No developments',
     S.errors.devs || (S.devs.length ? 'Raise the pending approval rate or switch to Projected.' : 'Run the pipeline (planning → llm → extend → summary), or start the server with MOCK=1.'));
@@ -711,7 +758,7 @@ function renderHist() {
   const rows = S.rows.filter(r => r.weight > 0 && isNum(sysScore(r)));
   if (!rows.length) { setState('st-hist', S.errors.devs ? 'error' : 'empty', S.errors.devs ? 'developments.geojson unavailable' : 'No scores', S.errors.devs || 'Scores appear once developments are loaded.'); $('#hist-meta').textContent = ''; return; }
   setState('st-hist', null);
-  const m = { t: 14, r: 14, b: 30, l: 30 };
+  const m = { t: 14, r: 14, b: 22, l: 30 };
   const bins = d3.bin().domain([0, 100]).thresholds(d3.range(0, 100, 10)).value(r => Math.min(sysScore(r), 99.999))(rows);
   const x = d3.scaleLinear([0, 100], [m.l, W - m.r]), y = d3.scaleLinear([0, Math.max(1, d3.max(bins, b => b.length))], [H - m.b, m.t]).nice();
   svg.append('g').attr('class', 'grid').selectAll('line').data(y.ticks(3)).join('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y);
@@ -729,12 +776,17 @@ function renderHist() {
     g.append('line').attr('x1', x(v)).attr('x2', x(v)).attr('y1', m.t - 2).attr('y2', H - m.b);
     g.append('text').attr('x', x(v) + (v > 70 ? -4 : 4)).attr('y', m.t + 6).attr('text-anchor', v > 70 ? 'end' : 'start').text(`${sel.id} ${v.toFixed(0)}`);
   }
-  $('#hist-meta').textContent = `${S.system} · median ${d3.median(rows, r => sysScore(r)).toFixed(0)} · max ${d3.max(rows, r => sysScore(r)).toFixed(0)}`;
-  $('#hist-foot').textContent = `${S.system === 'all' ? 'overall' : S.system} score 0–100 · developments per bin`;
+  $('#hist-meta').textContent = S.system === 'all' ? '' : S.system;
+  $('#hist-foot').textContent = '';
 }
 
 // ---- 03 detail ----------------------------------------------------------
-const estTag = key => S.assumptions.has(key) ? `<span class="est" data-a="${key}">≈</span>` : '<span class="est" data-a="">≈</span>';
+const A_ALIAS = { occupancy: 'HOUSEHOLD_SIZE', peak_trip_rate: 'PEAK_TRIP_RATE', pt_mode_share: 'PT_MODE_SHARE', primary_pupils_per_unit: 'CHILDREN_PER_HOUSEHOLD_PRIMARY',
+  secondary_pupils_per_unit: 'CHILDREN_PER_HOUSEHOLD_SECONDARY', frequent_bus: 'FREQ_THRESHOLD', walk_stop_m: 'STOP_WALK_M', walk_frequent_m: 'TRANSPORT_SCORE_FULL_M', walk_rail_m: 'STOP_WALK_M',
+  bus_speed: 'BUS_SPEED_KMH', bus_layover: 'LAYOVER_MIN', bus_headway: 'MIN_HEADWAY', school_primary_radius: 'PRIMARY_RADIUS_M', school_secondary_radius: 'POSTPRIMARY_RADIUS_M',
+  school_headroom: 'SCHOOL_PRESSURE_THRESHOLD', water_cost_100: 'WATER_MAIN_COST_EUR_PER_M', water_route_factor: 'WATER_SCORE_FULL_ROUTE_M', water_connect_m: 'WATER_SCORE_FULL_ROUTE_M' };
+const aKey = key => S.assumptions.has(key) ? key : (A_ALIAS[key] && S.assumptions.has(A_ALIAS[key])) ? A_ALIAS[key] : '';
+const estTag = key => `<span class="est" data-a="${aKey(key)}">≈</span>`;
 const kv = (l, v, est) => `<div class="kv"><span>${l}</span><b>${est ? estTag(est) : ''}${v}</b></div>`;
 function renderDetail() {
   const body = $('#detail-body');
@@ -742,12 +794,12 @@ function renderDetail() {
   if (route && !S.selected) {
     setState('st-detail', null);
     const served = route.serves.map(id => S.byId.get(id)).filter(Boolean);
-    body.innerHTML = `<div class="d-head"><div><div class="nm" style="color:var(--transport)">${esc(route.id)}</div><div class="id">Proposed bus route · to ${esc(route.to || '—')} · ${esc(route.pathSource)}</div></div><span class="badge watch">proposed</span></div>
+    body.innerHTML = `<div class="d-head"><div><div class="nm" style="color:var(--transport)">${esc(route.id)}</div><div class="id">Proposed bus route · to ${esc(route.to || '—')}</div></div><span class="badge watch">proposed</span></div>
       <div class="cards" style="grid-template-columns:1fr 1fr"><div class="card transport"><div class="ch"><span class="t">Route</span></div>
         ${kv('length', fmtKm1(route.km) + ' km')}${kv('round trip', fmtInt(route.rt) + ' min', 'bus_speed')}${kv('headway', fmtInt(route.headway) + ' min', 'bus_headway')}${kv('buses required', fmtInt(route.buses), 'bus_layover')}</div>
         <div class="card transport"><div class="ch"><span class="t">Demand</span></div>${kv('peak PT trips', fmtInt(route.demand), 'pt_mode_share')}${kv('serves', served.map(d => d.id).join(', ') || '—')}${kv('units served', fmtInt(d3.sum(served, d => d.units)))}</div></div>
-      <div class="empty-note">Routes are shortest street paths from car-dependent sites to the nearest station: an estimate, not a proposal by the NTA.</div>`;
-    $('#detail-meta').textContent = `${served.length} development${served.length === 1 ? '' : 's'}`;
+`;
+    $('#detail-meta').textContent = '';
     return;
   }
   const r = S.rowById?.get(S.selected);
@@ -759,17 +811,17 @@ function renderDetail() {
   body.innerHTML = `
     <div class="d-head"><div><div class="nm">${esc(r.id)}</div><div class="id">${esc(r.address || r.type)}${r.received ? ' · received ' + r.received.toISOString().slice(0, 10) : ''}</div></div>
       <div class="badges"><span class="badge ${r.status}">${r.status}</span><span class="badge ${statusOf(sc.overall)}">${isNum(sc.overall) ? sc.overall.toFixed(0) : '—'}</span></div></div>
-    <div class="d-row"><span>units <b>${fmtInt(r.units)}</b></span><span>residents <b>${estTag('occupancy')}${fmtInt(t.residents)}</b></span><span title="${esc(r.footprintSource)}">footprint <b>${/estimat/i.test(r.footprintSource) ? '≈est' : 'official'}</b></span></div>
+    <div class="d-row"><span>units <b>${fmtInt(r.units)}</b></span><span>residents <b>${estTag('occupancy')}${fmtInt(t.residents)}</b></span></div>
     <div class="d-desc" title="${esc(r.desc)}">${esc(r.desc) || '—'}</div>
     <div class="cards">
       ${card('water', 'Water', w.connected == null ? '<div class="kv"><span>no water data</span></div>' :
         kv('connected', w.connected ? 'yes' : 'no') + kv('to network', fmtM(w.dist), 'water_connect_m') + kv('new main', w.connected ? '0 m' : fmtM(w.route), 'water_route_factor') + kv('bore', w.bore ? w.bore + ' mm' : '—') + kv('cost', fmtEur(w.cost), 'water_cost_100'))}
       ${card('transport', 'Transport', t.cls == null ? '<div class="kv"><span>no transport data</span></div>' :
-        kv('class', esc({ car_dependent: 'car-dep.', frequent_bus: 'freq. bus' }[t.cls] || t.cls)) + kv('stop', fmtM(t.stop), 'walk_stop_m') + kv('freq. stop', fmtM(t.fstop), 'frequent_bus') + kv('rail', `${fmtM(t.railM)}`, 'walk_rail_m') + kv('peak trips', fmtInt(t.trips), 'peak_trip_rate') + kv('route', devRoute ? `<a href="#" data-route="${esc(devRoute.id)}" style="color:var(--transport)">${esc(devRoute.id)}</a> ×${fmtInt(devRoute.buses)}` : 'none'))}
+        kv('class', esc(t.cls)) + kv('stop', fmtM(t.stop), 'walk_stop_m') + kv('freq. stop', fmtM(t.fstop), 'frequent_bus') + kv('rail', `${fmtM(t.railM)}`, 'walk_rail_m') + kv('peak trips', fmtInt(t.trips), 'peak_trip_rate') + kv('route', devRoute ? `<a href="#" data-route="${esc(devRoute.id)}" style="color:var(--transport)">${esc(devRoute.id)}</a> ×${fmtInt(devRoute.buses)}` : 'none'))}
       ${card('schools', 'Schools', s.flag == null ? '<div class="kv"><span>no schools data</span></div>' :
         kv('primary', fmtInt(s.primary), 'primary_pupils_per_unit') + kv('secondary', fmtInt(s.secondary), 'secondary_pupils_per_unit') + kv('prim. nearby', fmtInt(s.nearP), 'school_primary_radius') + kv('sec. nearby', fmtInt(s.nearS), 'school_secondary_radius') + kv('capacity', fmtRatio(s.worst) + '×', 'school_headroom'))}
     </div>`;
-  $('#detail-meta').textContent = `${stop ? esc(stop.name) + ' · ' : ''}${t.rail ? esc(t.rail) : ''}`.slice(0, 48);
+  $('#detail-meta').textContent = '';
 }
 
 // ---- 04 alerts ----------------------------------------------------------
@@ -781,9 +833,9 @@ function renderAlerts() {
   setState('st-alerts', null);
   const ts = S.raw.summary?.generated_at ? utcStamp(new Date(S.raw.summary.generated_at)) : utcStamp(new Date());
   host.insertAdjacentHTML('beforeend', list.map((a, i) => `<div class="alert ${a.sev}${a.id && a.id === S.selected ? ' sel' : ''}" data-id="${esc(a.id ?? '')}"><i></i><div>
-    <div class="h"><b>${esc(a.title)}</b><span>${ts}Z${a.sys ? `<i style="background:${SYS_HEX[a.sys]}" title="${a.sys}"></i>` : ''}</span></div><div class="t">${a.text}</div></div></div>`).join(''));
+    <div class="h"><b>${esc(a.title)}</b><span>${a.sys ? `<i style="background:${SYS_HEX[a.sys]}" title="${a.sys}"></i>` : ''}</span></div><div class="t">${a.text}</div></div></div>`).join(''));
   const c = list.filter(a => a.sev === 'critical').length, w = list.filter(a => a.sev === 'watch').length;
-  $('#alerts-meta').textContent = `${list.length} · ${c} crit · ${w} watch`;
+  $('#alerts-meta').textContent = `${c} critical · ${w} watch`;
 }
 
 // ---- 05 scenario --------------------------------------------------------
@@ -791,9 +843,9 @@ function renderScenario() {
   $('#rate-val').textContent = `${S.scenario.rate}%`;
   $('#rate').disabled = S.scenario.mode === 'baseline';
   for (const b of $$('#mode button')) b.classList.toggle('on', b.dataset.m === S.scenario.mode);
-  $('#scen-meta').textContent = S.scenario.mode === 'baseline' ? 'granted units only' : `granted + pending × ${S.scenario.rate}%`;
+  $('#scen-meta').textContent = '';
   const bs = S.raw.summary?.by_status || {};
-  $('#sc-note').innerHTML = `<b>granted</b> ${fmtInt(bs.granted?.units ?? d3.sum(S.devs.filter(d => d.status === 'granted'), d => d.units))} u · <b>pending</b> ${fmtInt(bs.pending?.units ?? d3.sum(S.devs.filter(d => d.status === 'pending'), d => d.units))} u · pending sites weighted by the approval rate · watch ≥ ${THRESH.watch}, critical ≥ ${THRESH.critical}`;
+  if ($('#sc-note')) $('#sc-note').innerHTML = `<b>granted</b> ${fmtInt(bs.granted?.units ?? d3.sum(S.devs.filter(d => d.status === 'granted'), d => d.units))} u · <b>pending</b> ${fmtInt(bs.pending?.units ?? d3.sum(S.devs.filter(d => d.status === 'pending'), d => d.units))} u · pending sites weighted by the approval rate · watch ≥ ${THRESH.watch}, critical ≥ ${THRESH.critical}`;
 }
 
 // ---- 06 analyst query ---------------------------------------------------
@@ -816,7 +868,7 @@ async function ask(q) {
     const ids = (j.highlight_app_ids || []).map(String).filter(id => S.byId.has(id));
     const rids = (j.highlight_route_ids || []).map(String).filter(id => S.routeById.has(id));
     el.classList.remove('pending');
-    $('.a', el).innerHTML = esc(j.answer) + `<span class="eng">[${esc(j.engine || 'api')}]</span>` +
+    $('.a', el).innerHTML = esc(j.answer) +
       (ids.length || rids.length ? `<div class="chips">${ids.map(id => `<button data-id="${esc(id)}">${esc(id)}</button>`).join('')}${rids.map(id => `<button class="route" data-route="${esc(id)}">${esc(id)}</button>`).join('')}</div>` : '');
     if (j.warning) $('.a', el).insertAdjacentHTML('beforeend', `<div class="eng">${esc(j.warning)}</div>`);
     setHighlight(ids, rids, true);
@@ -844,6 +896,7 @@ document.addEventListener('mouseout', e => { if (e.target.closest && e.target.cl
 
 // ---- map ----------------------------------------------------------------
 proj4.defs('EPSG:2157', '+proj=tmerc +lat_0=53.5 +lon_0=-8 +k=0.99982 +x_0=600000 +y_0=750000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+const RING_DATA = [{ r: 400 }, { r: 800 }];
 let map, overlay, revealOrder = Infinity, revealTimer = null, busTime = 0, busRaf = null, lastBusTick = 0;
 
 const BASE_STYLE = {
@@ -886,12 +939,23 @@ function initMap() {
   map.on('mouseout', () => { $('#c-wgs').textContent = '—'; $('#c-itm').textContent = '—'; });
   map.on('click', e => { if (!e.originalEvent._deckHandled) select(null, 'map'); });
 }
-function resetCamera(duration = 1600) { if (map) map.flyTo({ ...DUBLIN, duration, essential: true }); }
+function sidePad() { const m = $('#mid'); return { left: m.classList.contains('l-closed') ? 22 : 360, right: m.classList.contains('r-closed') ? 22 : 380 }; }
+function toggleSide(side) {
+  const m = $('#mid'), cls = side === 'l' ? 'l-closed' : 'r-closed'; m.classList.toggle(cls);
+  const h = $(side === 'l' ? '#h-left' : '#h-right'); const open = !m.classList.contains(cls);
+  h.firstChild.textContent = side === 'l' ? (open ? '‹' : '›') : (open ? '›' : '‹');
+  try { localStorage.setItem('iim.sides', JSON.stringify({ l: $('#mid').classList.contains('l-closed'), r: $('#mid').classList.contains('r-closed') })); } catch (e) {}
+}
+function restoreSides() {
+  try { const v = JSON.parse(localStorage.getItem('iim.sides') || '{}'); if (v.l) toggleSide('l'); if (v.r) toggleSide('r'); } catch (e) {}
+}
+function resetCamera(duration = 1600) { if (map) { const p = sidePad(); map.flyTo({ ...DUBLIN, duration, essential: true, padding: { left: p.left, right: p.right, top: 0, bottom: 0 } }); } }
 function fitTo(bounds, opts = {}) {
   if (!map || !isFinite(bounds[0])) return;
-  map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: { top: 70, bottom: 90, left: 200, right: 270 }, duration: 800, maxZoom: 15.5, pitch: 45, bearing: DUBLIN.bearing, ...opts });
+  const p = sidePad();
+  map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: { top: 70, bottom: 90, left: p.left + 180, right: p.right + 250 }, duration: 800, maxZoom: 15.5, pitch: 45, bearing: DUBLIN.bearing, ...opts });
 }
-function flyToDev(d) { if (map) map.flyTo({ center: d.centroid, zoom: Math.max(map.getZoom(), 14.6), pitch: 62, bearing: -25, duration: 1100, essential: true }); }
+function flyToDev(d) { if (map) { const p = sidePad(); map.flyTo({ center: d.centroid, zoom: Math.max(map.getZoom(), 14.6), pitch: 62, bearing: -25, duration: 1100, essential: true, padding: { left: p.left, right: p.right, top: 0, bottom: 0 } }); } }
 
 function startReveal() {
   clearInterval(revealTimer); revealOrder = -1;
@@ -901,7 +965,11 @@ function busLoop(now) {           // animates the proposed-route buses only whil
   busRaf = null;
   if (!(S.layers.routes && (S.system === 'all' || S.system === 'transport') && S.routes.length)) return;
   busTime += (now - lastBusTick) / 1000 * 12; lastBusTick = now;   // 12× real time
-  renderMap(); busRaf = requestAnimationFrame(busLoop);
+  if (S.cachedLayers) {   // only the trips layer changes per frame; every other layer is reused as-is
+    const ct = busTime % (2 * (d3.max(S.routes, r => r.duration) || 1) + 120);
+    overlay.setProps({ layers: S.cachedLayers.map(l => l.id === 'buses' ? l.clone({ currentTime: ct }) : l) });
+  }
+  busRaf = requestAnimationFrame(busLoop);
 }
 function syncBusLoop() { const want = S.layers.routes && (S.system === 'all' || S.system === 'transport') && S.routes.length; if (want && !busRaf) { lastBusTick = performance.now(); busRaf = requestAnimationFrame(busLoop); } }
 
@@ -1000,7 +1068,7 @@ function renderMap() {
 
   // -- catchment rings + developments -------------------------------------
   if (selDev && S.layers.rings) layers.push(new deck.ScatterplotLayer({
-    id: 'rings', data: [{ r: 400 }, { r: 800 }], getPosition: () => selDev.centroid, radiusUnits: 'meters', getRadius: d => d.r, stroked: true, filled: false,
+    id: 'rings', data: RING_DATA, getPosition: () => selDev.centroid, radiusUnits: 'meters', getRadius: d => d.r, stroked: true, filled: false,
     lineWidthUnits: 'pixels', getLineWidth: 1, getLineColor: [...ACCENT, 170], updateTriggers: { getPosition: [sel] },
   }));
   if (S.layers.devs) {
@@ -1022,6 +1090,7 @@ function renderMap() {
       updateTriggers: { getColor: [sel, selRoute, [...hl].join()], getWidth: [sel, [...hl].join()], getPath: [S.scenario.mode, S.scenario.rate] },
     }));
   }
+  S.cachedLayers = layers;
   overlay.setProps({ layers });
 }
 
@@ -1058,7 +1127,7 @@ function hoverNet(i) {
 function renderSystems() {
   $('#systems').innerHTML = SYSTEMS.map((s, i) => `<button type="button" data-s="${s}" class="${S.system === s ? 'on' : ''}">${s === 'all' ? '' : `<i style="background:${SYS_HEX[s]}"></i>`}${s}<kbd>${i + 1}</kbd></button>`).join('');
 }
-const LAYER_DEFS = [['devs', 'Developments', null], ['ext', 'New water main', 'water'], ['net', 'Est. network', 'water'], ['stops', 'Bus stops', 'transport'], ['rail', 'Rail · Luas', 'transport'], ['routes', 'Proposed routes', 'transport'], ['schools', 'Schools', 'schools'], ['rings', 'Catchment rings', null]];
+const LAYER_DEFS = [['devs', 'Developments', null], ['ext', 'New main', 'water'], ['net', 'Network', 'water'], ['stops', 'Stops', 'transport'], ['rail', 'Rail', 'transport'], ['routes', 'Routes', 'transport'], ['schools', 'Schools', 'schools'], ['rings', 'Catchment', null]];
 function renderLayerControl() {
   const host = $('#layers'); for (const el of $$('.sw', host)) el.remove();
   host.insertAdjacentHTML('beforeend', LAYER_DEFS.filter(([k, l, s]) => !s || S.system === 'all' || S.system === s).map(([k, l, s]) =>
@@ -1066,21 +1135,21 @@ function renderLayerControl() {
 }
 function toggleLayer(k) { S.layers[k] = !S.layers[k]; if (k === 'net' && S.layers.net && !S.raw.net) loadNetwork(); renderLayerControl(); renderMap(); syncBusLoop(); }
 function renderLegend() {
-  const src = (off) => `<span class="src ${off ? 'off' : ''}">${off ? 'OFFICIAL' : 'ESTIMATED'}</span>`;
+  const src = () => '';
   const show = s => S.system === 'all' || S.system === s;
   const rows = [
-    `<div class="lg"><i class="sq" style="background:#3FB68B"></i><i class="sq" style="background:#E3B341;margin-left:-4px"></i><i class="sq" style="background:#E5534B;margin-left:-4px"></i><span class="lb">nominal &lt;${THRESH.watch} · watch · critical ≥${THRESH.critical}</span>${src(false)}</div>`,
-    `<div class="lg"><i class="sq" style="background:#8B98A8"></i><span class="lb">granted = solid · height = log units</span>${src(true)}</div>`,
-    `<div class="lg"><i class="sq" style="background:rgba(139,152,168,.4);outline:1px dashed #8B98A8;outline-offset:-1px"></i><span class="lb">pending = 50% + dashed rim</span>${src(true)}</div>`,
+    `<div class="lg"><i class="sw-" style="background:linear-gradient(90deg,#3FB68B 0 33%,#E3B341 33% 66%,#E5534B 66%)"></i><span class="lb">nominal · watch · critical</span>${src(false)}</div>`,
+    `<div class="lg"><i class="sq" style="background:#8B98A8"></i><span class="lb">granted · height = units</span>${src(true)}</div>`,
+    `<div class="lg"><i class="sq" style="background:rgba(139,152,168,.4);outline:1px dashed #8B98A8;outline-offset:-1px"></i><span class="lb">pending</span>${src(true)}</div>`,
   ];
-  if (show('water')) rows.push(`<div class="lg"><i class="ln" style="border-color:#3FD0E0"></i><span class="lb">new water main (by order)</span>${src(false)}</div>`,
-    `<div class="lg"><i class="ln dash" style="border-color:#8B98A8"></i><span class="lb">est. network: solid hi · dashed med</span>${src(false)}</div>`);
-  if (show('transport')) rows.push(`<div class="lg"><i class="dot" style="background:#9B8CFF"></i><span class="lb">bus stop · size = buses/h</span>${src(false)}</div>`,
-    `<div class="lg"><i class="ln" style="border-color:#9B8CFF"></i><span class="lb">Luas solid · rail dashed · ◦ stn</span>${src(false)}</div>`,
-    `<div class="lg"><i class="ln" style="border-color:#9B8CFF;border-top-width:3px"></i><span class="lb">proposed route · moving buses</span>${src(false)}</div>`);
-  if (show('schools')) rows.push(`<div class="lg"><i class="dot" style="background:#F0B85A;box-shadow:0 0 0 3px rgba(229,83,75,.35)"></i><span class="lb">school · size = pupils · halo = cap.</span>${src(false)}</div>`);
-  rows.push(`<div class="lg"><i class="dot" style="border:1px solid #3FD0E0"></i><span class="lb">400 / 800 m catchment rings</span>${src(false)}</div>`,
-    `<div class="lg"><span class="nd">Estimated water network — inferred from public data (hydrants, manholes, buildings), not Uisce Éireann records. Planning status is official; all infrastructure figures are prototype estimates.</span></div>`);
+  if (show('water')) rows.push(`<div class="lg"><i class="ln" style="border-color:#3FD0E0"></i><span class="lb">new water main</span>${src(false)}</div>`,
+    `<div class="lg"><i class="ln dash" style="border-color:#8B98A8"></i><span class="lb">est. network</span>${src(false)}</div>`);
+  if (show('transport')) rows.push(`<div class="lg"><i class="dot" style="background:#9B8CFF"></i><span class="lb">bus stop</span>${src(false)}</div>`,
+    `<div class="lg"><i class="ln" style="border-color:#9B8CFF"></i><span class="lb">Luas · rail dashed</span>${src(false)}</div>`,
+    `<div class="lg"><i class="ln" style="border-color:#9B8CFF;border-top-width:3px"></i><span class="lb">proposed bus route</span>${src(false)}</div>`);
+  if (show('schools')) rows.push(`<div class="lg"><i class="dot" style="background:#F0B85A;box-shadow:0 0 0 3px rgba(229,83,75,.35)"></i><span class="lb">school · halo = capacity</span>${src(false)}</div>`);
+  rows.push(`<div class="lg"><i class="dot" style="border:1px solid #3FD0E0"></i><span class="lb">400 / 800 m catchment</span>${src(false)}</div>`,
+    `<div class="lg"><span class="nd">Planning status is official. Everything else is estimated; the water network is inferred from public data, not Uisce Éireann records.</span></div>`);
   $('#legend-rows').innerHTML = rows.join('');
 }
 
@@ -1134,6 +1203,8 @@ function bindEvents() {
   $('#mode').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.m !== S.scenario.mode) { S.scenario.mode = b.dataset.m; applyScenario(); } });
   $('#systems').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setSystem(b.dataset.s); });
   $('#layers').addEventListener('click', e => { const sw = e.target.closest('.sw'); if (sw) toggleLayer(sw.dataset.k); });
+  $('#h-left').addEventListener('click', () => toggleSide('l'));
+  $('#h-right').addEventListener('click', () => toggleSide('r'));
   $('#btn-reset').addEventListener('click', () => resetCamera(900));
   $('#btn-assump').addEventListener('click', () => toggleDrawer());
   $('#btn-close').addEventListener('click', () => toggleDrawer(false));
@@ -1144,6 +1215,8 @@ function bindEvents() {
     if (inInput) return;
     if (e.key === '/') { e.preventDefault(); $('#query').focus(); return; }
     if (e.key === 'r' || e.key === 'R') { resetCamera(900); clearSelection(); return; }
+    if (e.key === '[') { toggleSide('l'); return; }
+    if (e.key === ']') { toggleSide('r'); return; }
     if (/^[1-4]$/.test(e.key)) { setSystem(SYSTEMS[+e.key - 1]); return; }
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault(); const rows = $$('#tbl tbody tr'); if (!rows.length) return;
@@ -1152,7 +1225,7 @@ function bindEvents() {
     }
   });
   const ro = new ResizeObserver(() => { renderHist(); if (map) map.resize(); });
-  ro.observe($('#hist')); ro.observe($('#map-wrap'));
+  ro.observe($('#hist')); ro.observe($('#mid'));
 }
 
 // ---- boot ---------------------------------------------------------------
@@ -1166,17 +1239,16 @@ function bootSequence() {
 }
 
 async function main() {
-  decoratePanels(); buildKpis(); renderSystems(); renderLayerControl(); renderLegend();
+  decoratePanels(); buildKpis(); renderSystems(); renderLayerControl(); renderLegend(); restoreSides();
   setAllStates('loading', 'Loading'); setState('st-detail', 'loading', 'Loading');
   tickClock(); setInterval(tickClock, 1000);
   initMap(); bindEvents();
   await loadAll();
-  recompute(); renderSources(); renderDrawer();
+  buildKpis(); recompute(); renderSources(); renderDrawer();
   if (!S.raw.devs && !S.raw.summary) setAllStates('error', 'Data unavailable', 'No pipeline outputs could be loaded from /data. Check the server log.');
   renderAll();
   bootSequence();
-  if (S.status && S.status.mock) $('#query-meta').textContent = S.status.llm_configured ? 'mock data · llm' : 'mock data · local rules';
-  else $('#query-meta').textContent = S.status?.llm_configured ? 'llm engine' : 'local rules engine';
+  $('#query-meta').textContent = S.status?.llm_configured ? '' : 'offline rules';
 }
 main().catch(err => { console.error(err); setAllStates('error', 'Dashboard failed to start', String(err.message || err)); });
 

@@ -1,11 +1,12 @@
 """Serve the dashboard and the pipeline outputs.
 
     .venv/bin/python server.py                 # http://127.0.0.1:8000, real outputs in data/
-    MOCK=1 .venv/bin/python server.py          # the mock dataset in data/mock/
+    MOCK=1 .venv/bin/python server.py          # mocks: data/impact/mock/ if present, else data/mock/
     .venv/bin/python server.py --data some/dir --port 8080
 
 GET  /                 frontend/index.html
-GET  /data/<file>      public outputs only (never data/cache or data/interim)
+GET  /data/<file>      public outputs only (never data/cache or data/interim); default dir is data/impact/
+                       when the impact pipeline has run, else data/
 GET  /api/status       which files exist, per-source counts and errors, data directory
 POST /api/ask          {question, context?} -> {answer, highlight_app_ids, highlight_route_ids, engine}
 """
@@ -29,10 +30,17 @@ PUBLIC_FILES = {"developments.geojson", "extensions.geojson", "network.geojson",
                 "assets.geojson"}
 
 
+IMPACT = Path(os.environ.get("IMPACT_OUT") or DATA / "impact")
+
+
 def data_dir() -> Path:
+    """DATA_DIR / --data wins; MOCK=1 picks the impact mocks (then data/mock); otherwise the impact
+    outputs when they exist, else the water-pipeline outputs in data/."""
     if os.environ.get("DATA_DIR"):
         return Path(os.environ["DATA_DIR"]).resolve()
-    return MOCK.resolve() if (env("MOCK") or "").lower() in ("1", "true", "yes") else DATA.resolve()
+    if (env("MOCK") or "").lower() in ("1", "true", "yes"):
+        return ((IMPACT / "mock") if (IMPACT / "mock" / "developments.geojson").exists() else MOCK).resolve()
+    return (IMPACT if (IMPACT / "developments.geojson").exists() else DATA).resolve()
 
 
 app = FastAPI(title="Infrastructure Impact Monitor — Dublin region (prototype)")
@@ -59,7 +67,7 @@ def status():
     files = {n: (d / n).exists() for n in sorted(PUBLIC_FILES)}
     sources = read_json(INTERIM / "sources.json", {}) if d == DATA.resolve() else {}
     summary = read_json(d / "summary.json", {}) or {}
-    return {"data_dir": str(d), "mock": d == MOCK.resolve(), "files": files, "sources": sources,
+    return {"data_dir": str(d), "mock": d.name == "mock", "files": files, "sources": sources,
             "generated_at": summary.get("generated_at"), "llm_configured": bool(env("OPENAI_API_KEY"))}
 
 
@@ -163,6 +171,18 @@ def _llm_answer(q: str, ctx: dict) -> tuple[str, list[str], list[str]]:
     return out["answer"], [i for i in out["highlight_app_ids"] if i in apps], [i for i in out["highlight_route_ids"] if i in routes]
 
 
+def _server_context(top_n: int = 30) -> dict:
+    """LLM context built from the served files, for callers that send none: summary.json,
+    the top developments by overall score and every proposed route (the key stays server-side)."""
+    d = data_dir()
+    devs = (read_json(d / "developments.geojson", {}) or {}).get("features", [])
+    devs = sorted((f["properties"] for f in devs), key=lambda p: -((p.get("scores") or {}).get("overall") or 0))
+    trim = lambda p: {**p, "description": (p.get("description") or "")[:300]}  # noqa: E731
+    routes = (read_json(d / "transport_routes.geojson", {}) or {}).get("features", [])
+    return {"summary": read_json(d / "summary.json", {}), "developments": [trim(p) for p in devs[:top_n]],
+            "routes": [f["properties"] for f in routes]}
+
+
 @app.post("/api/ask")
 def ask(body: Ask):
     q = body.question.strip()
@@ -171,7 +191,7 @@ def ask(body: Ask):
     ctx = body.context or {}
     if env("OPENAI_API_KEY"):
         try:
-            answer, apps, routes = _llm_answer(q, ctx)
+            answer, apps, routes = _llm_answer(q, ctx if ctx.get("developments") else _server_context())
             return {"answer": answer, "highlight_app_ids": apps, "highlight_route_ids": routes,
                     "engine": env("OPENAI_MODEL") or "gpt-4o-mini"}
         except Exception as exc:  # fall back rather than fail the desk

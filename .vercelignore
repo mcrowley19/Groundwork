@@ -1,0 +1,13 @@
+.venv/
+.env
+__pycache__/
+data/cache/
+data/interim/
+data/*.geojson
+data/summary.json
+data/impact/
+impact/
+pipeline/stage*.py
+pipeline/mock_infra.py
+run.py
+run_impact.py

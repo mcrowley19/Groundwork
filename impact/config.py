@@ -73,6 +73,15 @@ CHILDREN_PER_HOUSEHOLD_SECONDARY = A(
     "CHILDREN_PER_HOUSEHOLD_SECONDARY", "Post-primary pupils per new dwelling",
     round(POSTPRIMARY_SHARE_OF_POPULATION * HOUSEHOLD_SIZE, 3), "pupils/dwelling",
     "Derived: POSTPRIMARY_SHARE_OF_POPULATION × HOUSEHOLD_SIZE.").value
+SCHOOLS_PRIMARY_URL = A(
+    "SCHOOLS_PRIMARY_URL", "Department of Education, Data on Individual Schools — Mainstream (primary) 2025/26",
+    "https://assets.gov.ie/static/documents/8e1b86ab/Data_on_Individual_Schools_Mainstream..xlsx", "url",
+    "gov.ie 'Primary schools enrolment figures' collection; final data for 2025/2026, with school "
+    "latitude/longitude and enrolment per return.").value
+SCHOOLS_POSTPRIMARY_URL = A(
+    "SCHOOLS_POSTPRIMARY_URL", "Department of Education, Data on Individual Schools — post-primary 2025/26",
+    "https://assets.gov.ie/static/documents/d5fbb204/Data_on_Individual_Schools_post_primary..xlsx", "url",
+    "gov.ie 'Post-primary schools enrolment figures' collection; final data for 2025/2026.").value
 PRIMARY_RADIUS_M = A("PRIMARY_RADIUS_M", "Catchment radius for 'nearby' primary schools", 2000, "m",
                      "Project brief.").value
 POSTPRIMARY_RADIUS_M = A("POSTPRIMARY_RADIUS_M", "Catchment radius for 'nearby' post-primary schools",
@@ -96,6 +105,9 @@ DBSCAN_EPS_M = A("DBSCAN_EPS_M", "Clustering distance for weak/unserved developm
                  "Project brief.").value
 DBSCAN_MIN_DEVS = A("DBSCAN_MIN_DEVS", "Minimum developments in a cluster to propose a route", 2,
                     "developments", "Design choice.").value
+MIN_ROUTE_UNITS = A("MIN_ROUTE_UNITS", "Planned units a cluster needs before a new route is proposed",
+                    150, "dwellings", f"{TODO}. Design choice: smaller clusters (often 2–3 one-off "
+                    "houses) generate under one bus-load of peak trips.").value
 GTFS_URL = A("GTFS_URL", "NTA GTFS static feed", "https://www.transportforireland.ie/transitData/Data/GTFS_All.zip",
              "url", "data.gov.ie dataset 'NTA GTFS and GTFS Realtime' (nta-gtfs), resource 'GTFS'.").value
 
@@ -124,5 +136,9 @@ SCORE_WEIGHTS = A("SCORE_WEIGHTS", "Overall score weights", {"water": 0.4, "tran
 # --- output size ----------------------------------------------------------------------
 SIMPLIFY_TOLERANCE_M = A("SIMPLIFY_TOLERANCE_M", "Geometry simplification tolerance", 5, "m",
                          "Keeps the full dataset under ~15 MB (project brief).").value
+NETWORK_CONTEXT_M = A("NETWORK_CONTEXT_M", "Network edges kept within this distance of any development",
+                      2000, "m", "Size budget (project brief, ~15 MB): at county scale the full street "
+                      "network alone is ~14 MB. Edges further than this from every development are left "
+                      "out of data/impact/network.geojson; the water monitor's data/network.geojson keeps them.").value
 COORD_DECIMALS = A("COORD_DECIMALS", "Coordinate decimals in outputs", 5, "decimal places",
                    "≈1 m precision.").value

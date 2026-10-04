@@ -16,7 +16,10 @@ INTERIM = DATA / "interim"
 MOCK = DATA / "mock"
 
 for d in (DATA, CACHE, INTERIM):
-    d.mkdir(parents=True, exist_ok=True)
+    try:
+        d.mkdir(parents=True, exist_ok=True)
+    except OSError:  # read-only filesystem when served from a host like Vercel
+        pass
 
 load_dotenv(ROOT / ".env")
 

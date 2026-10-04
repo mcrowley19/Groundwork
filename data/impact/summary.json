@@ -1,0 +1,52 @@
+{
+  "planned_units": 0,
+  "residents": 0,
+  "new_peak_pt_trips": 0,
+  "proposed_routes": 0,
+  "buses_required": 0,
+  "new_primary_pupils": 0,
+  "new_secondary_pupils": 0,
+  "water_extension_km": 0.0,
+  "water_cost_eur": 0,
+  "by_status": {
+    "granted": {
+      "developments": 0,
+      "units": 0
+    },
+    "pending": {
+      "developments": 0,
+      "units": 0
+    }
+  },
+  "sources": {
+    "planning_polygons": {
+      "status": "ok",
+      "records": 25408
+    },
+    "planning_points": {
+      "status": "ok",
+      "records": 25388
+    },
+    "llm_extraction": {
+      "status": "failed",
+      "records": 0
+    },
+    "water_network": {
+      "status": "ok",
+      "records": 0
+    },
+    "gtfs": {
+      "status": "ok",
+      "records": 5402
+    },
+    "schools_primary": {
+      "status": "ok",
+      "records": 3067
+    },
+    "schools_post_primary": {
+      "status": "ok",
+      "records": 721
+    }
+  },
+  "generated_at": "2026-10-04T12:46:08+00:00"
+}

@@ -1,0 +1,269 @@
+[
+  {
+    "key": "HOUSEHOLD_SIZE",
+    "label": "Average persons per household (Dublin)",
+    "value": 2.75,
+    "unit": "persons/dwelling",
+    "source_note": "CSO Census 2022 SAPS table T5.2: persons in private households ÷ private households, summed over the 5,576 small areas intersecting County Dublin (1,570,981 / 571,188)."
+  },
+  {
+    "key": "NHTS_DAILY_TRIP_RATE",
+    "label": "Trips per person per day, Dublin City and Suburbs",
+    "value": 2.68,
+    "unit": "trips/person/day",
+    "source_note": "NTA National Household Travel Survey 2023 (Ipsos B&A, Aug 2024), Figure 16."
+  },
+  {
+    "key": "NHTS_AM_PEAK_SHARE",
+    "label": "Share of daily trips made in the AM peak (07:00–09:59)",
+    "value": 0.22,
+    "unit": "fraction",
+    "source_note": "NTA National Household Travel Survey 2023, trend section: 'AM Peak travel is unchanged at 22% in 2023' (national figure; no Dublin-specific peak share is published)."
+  },
+  {
+    "key": "PEAK_TRIP_RATE",
+    "label": "AM-peak trips per resident",
+    "value": 0.59,
+    "unit": "trips/person (07:00–10:00)",
+    "source_note": "Derived: NHTS_DAILY_TRIP_RATE × NHTS_AM_PEAK_SHARE."
+  },
+  {
+    "key": "PT_MODE_SHARE",
+    "label": "Public transport share of trips, Dublin City and Suburbs",
+    "value": 0.07,
+    "unit": "fraction",
+    "source_note": "NTA National Household Travel Survey 2023, Figure 53: bus/coach 5% + train/DART/Luas 2% of all trips. All-day, all-purpose share; the AM-peak commuting share is likely higher."
+  },
+  {
+    "key": "AM_PEAK_HOURS",
+    "label": "Length of the AM peak window",
+    "value": 3,
+    "unit": "hours",
+    "source_note": "Project brief (weekday 07:00–10:00); matches the NHTS 2023 AM-peak definition."
+  },
+  {
+    "key": "PRIMARY_SHARE_OF_POPULATION",
+    "label": "Share of population presenting for primary school",
+    "value": 0.12,
+    "unit": "fraction",
+    "source_note": "Department of Education and Science / DoEHLG, 'The Provision of Schools and the Planning System: A Code of Practice' (2008): 'an average of 12% of the population are expected to present for primary education'. Cross-check: 2025/26 mainstream primary enrolment 535,600 ÷ Census 2022 population 5,149,139 = 10.4%."
+  },
+  {
+    "key": "POSTPRIMARY_SHARE_OF_POPULATION",
+    "label": "Share of population in post-primary school",
+    "value": 0.0834,
+    "unit": "fraction",
+    "source_note": "Derived: Department of Education 'Data on Individual Schools' 2025/26 post-primary enrolment 429,653 ÷ CSO Census 2022 State population 5,149,139. The 2008 Code of Practice gives no post-primary figure."
+  },
+  {
+    "key": "CHILDREN_PER_HOUSEHOLD_PRIMARY",
+    "label": "Primary pupils per new dwelling",
+    "value": 0.33,
+    "unit": "pupils/dwelling",
+    "source_note": "Derived: PRIMARY_SHARE_OF_POPULATION × HOUSEHOLD_SIZE."
+  },
+  {
+    "key": "CHILDREN_PER_HOUSEHOLD_SECONDARY",
+    "label": "Post-primary pupils per new dwelling",
+    "value": 0.229,
+    "unit": "pupils/dwelling",
+    "source_note": "Derived: POSTPRIMARY_SHARE_OF_POPULATION × HOUSEHOLD_SIZE."
+  },
+  {
+    "key": "SCHOOLS_PRIMARY_URL",
+    "label": "Department of Education, Data on Individual Schools — Mainstream (primary) 2025/26",
+    "value": "https://assets.gov.ie/static/documents/8e1b86ab/Data_on_Individual_Schools_Mainstream..xlsx",
+    "unit": "url",
+    "source_note": "gov.ie 'Primary schools enrolment figures' collection; final data for 2025/2026, with school latitude/longitude and enrolment per return."
+  },
+  {
+    "key": "SCHOOLS_POSTPRIMARY_URL",
+    "label": "Department of Education, Data on Individual Schools — post-primary 2025/26",
+    "value": "https://assets.gov.ie/static/documents/d5fbb204/Data_on_Individual_Schools_post_primary..xlsx",
+    "unit": "url",
+    "source_note": "gov.ie 'Post-primary schools enrolment figures' collection; final data for 2025/2026."
+  },
+  {
+    "key": "PRIMARY_RADIUS_M",
+    "label": "Catchment radius for 'nearby' primary schools",
+    "value": 2000,
+    "unit": "m",
+    "source_note": "Project brief."
+  },
+  {
+    "key": "POSTPRIMARY_RADIUS_M",
+    "label": "Catchment radius for 'nearby' post-primary schools",
+    "value": 5000,
+    "unit": "m",
+    "source_note": "Project brief."
+  },
+  {
+    "key": "SCHOOL_PRESSURE_THRESHOLD",
+    "label": "Projected new pupils ÷ current enrolment that raises a pressure flag",
+    "value": 0.1,
+    "unit": "ratio",
+    "source_note": "TODO: cite. Proxy only: the Department publishes enrolment, not capacity."
+  },
+  {
+    "key": "STOP_WALK_M",
+    "label": "Walking distance that counts as 'near' a stop",
+    "value": 400,
+    "unit": "m",
+    "source_note": "Project brief; TODO: cite (common planning walk-distance standard)."
+  },
+  {
+    "key": "FREQ_THRESHOLD",
+    "label": "Departures per hour for a 'frequent' stop or station",
+    "value": 6,
+    "unit": "departures/hr",
+    "source_note": "TODO: cite. Design choice: a 10-minute AM-peak service."
+  },
+  {
+    "key": "BUS_SPEED_KMH",
+    "label": "Average operating speed of a new bus route",
+    "value": 15,
+    "unit": "km/h",
+    "source_note": "TODO: cite"
+  },
+  {
+    "key": "LAYOVER_MIN",
+    "label": "Layover/recovery time per round trip",
+    "value": 10,
+    "unit": "min",
+    "source_note": "TODO: cite"
+  },
+  {
+    "key": "BUS_CAPACITY",
+    "label": "Passengers per bus",
+    "value": 90,
+    "unit": "passengers",
+    "source_note": "TODO: cite (double-deck)."
+  },
+  {
+    "key": "BUS_LOAD_FACTOR",
+    "label": "Planned peak load as share of capacity",
+    "value": 0.8,
+    "unit": "fraction",
+    "source_note": "TODO: cite"
+  },
+  {
+    "key": "MIN_HEADWAY",
+    "label": "Shortest headway a proposed route may run",
+    "value": 5,
+    "unit": "min",
+    "source_note": "Project brief; design choice."
+  },
+  {
+    "key": "MAX_HEADWAY",
+    "label": "Longest headway a proposed route may run",
+    "value": 20,
+    "unit": "min",
+    "source_note": "Project brief; design choice."
+  },
+  {
+    "key": "DBSCAN_EPS_M",
+    "label": "Clustering distance for weak/unserved developments",
+    "value": 600,
+    "unit": "m",
+    "source_note": "Project brief."
+  },
+  {
+    "key": "DBSCAN_MIN_DEVS",
+    "label": "Minimum developments in a cluster to propose a route",
+    "value": 2,
+    "unit": "developments",
+    "source_note": "Design choice."
+  },
+  {
+    "key": "MIN_ROUTE_UNITS",
+    "label": "Planned units a cluster needs before a new route is proposed",
+    "value": 150,
+    "unit": "dwellings",
+    "source_note": "TODO: cite. Design choice: smaller clusters (often 2–3 one-off houses) generate under one bus-load of peak trips."
+  },
+  {
+    "key": "GTFS_URL",
+    "label": "NTA GTFS static feed",
+    "value": "https://www.transportforireland.ie/transitData/Data/GTFS_All.zip",
+    "unit": "url",
+    "source_note": "data.gov.ie dataset 'NTA GTFS and GTFS Realtime' (nta-gtfs), resource 'GTFS'."
+  },
+  {
+    "key": "WATER_MAIN_COST_EUR_PER_M",
+    "label": "Installed cost of new water main",
+    "value": 500,
+    "unit": "EUR/m",
+    "source_note": "TODO: cite. Placeholder unit rate; Uisce Éireann does not publish one."
+  },
+  {
+    "key": "STATUS_MAP",
+    "label": "LLM status → dashboard status (others excluded)",
+    "value": {
+      "granted": "granted",
+      "pending": "pending",
+      "appealed": "pending"
+    },
+    "unit": "mapping",
+    "source_note": "Design choice: refused, withdrawn, invalid and unknown applications are excluded."
+  },
+  {
+    "key": "FOOTPRINT_SQUARE_M",
+    "label": "Side of the square drawn when no site polygon exists",
+    "value": 40,
+    "unit": "m",
+    "source_note": "Display only; carries no analytic weight."
+  },
+  {
+    "key": "WATER_SCORE_FULL_ROUTE_M",
+    "label": "New-main route length that scores 100",
+    "value": 1000,
+    "unit": "m",
+    "source_note": "Design choice."
+  },
+  {
+    "key": "TRANSPORT_SCORE_FULL_M",
+    "label": "Distance to a frequent stop/station that scores 100",
+    "value": 1600,
+    "unit": "m",
+    "source_note": "Design choice (4 × STOP_WALK_M)."
+  },
+  {
+    "key": "SCHOOL_SCORE_FULL_RATIO",
+    "label": "Nearby-school pressure ratio that scores 100",
+    "value": 0.25,
+    "unit": "ratio",
+    "source_note": "Design choice."
+  },
+  {
+    "key": "SCORE_WEIGHTS",
+    "label": "Overall score weights",
+    "value": {
+      "water": 0.4,
+      "transport": 0.35,
+      "schools": 0.25
+    },
+    "unit": "weights",
+    "source_note": "Design choice."
+  },
+  {
+    "key": "SIMPLIFY_TOLERANCE_M",
+    "label": "Geometry simplification tolerance",
+    "value": 5,
+    "unit": "m",
+    "source_note": "Keeps the full dataset under ~15 MB (project brief)."
+  },
+  {
+    "key": "NETWORK_CONTEXT_M",
+    "label": "Network edges kept within this distance of any development",
+    "value": 2000,
+    "unit": "m",
+    "source_note": "Size budget (project brief, ~15 MB): at county scale the full street network alone is ~14 MB. Edges further than this from every development are left out of data/impact/network.geojson; the water monitor's data/network.geojson keeps them."
+  },
+  {
+    "key": "COORD_DECIMALS",
+    "label": "Coordinate decimals in outputs",
+    "value": 5,
+    "unit": "decimal places",
+    "source_note": "≈1 m precision."
+  }
+]

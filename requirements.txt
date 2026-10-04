@@ -11,3 +11,7 @@ openpyxl
 fastapi
 uvicorn
 pyrosm
+scikit-learn
+pyarrow
+osmium
+httpx

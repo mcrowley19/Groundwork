@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 import geopandas as gpd
 import requests
+from shapely import wkt
 from shapely.geometry import Point, box, shape
 from shapely.ops import unary_union
 
@@ -20,13 +21,23 @@ from pipeline.stage1_planning import URL as POINTS_URL
 from pipeline.stage1_planning import app_id
 
 from . import config as C
-from .common import DEVS, METRIC_CRS, PIPE_INTERIM, WATER_DIR, WGS84, read_json, source, write_json
+from .common import CACHE, DEVS, METRIC_CRS, PIPE_INTERIM, WATER_DIR, WGS84, read_json, source, write_json
 
 POLYGONS_URL = POINTS_URL.replace("/FeatureServer/0/query", "/FeatureServer/1/query")
 
 
 def fetch_polygons(bbox, years: int = 3) -> dict[str, object]:
-    """app_id -> unioned site polygon (EPSG:2157 shapely geometry)."""
+    """app_id -> unioned site polygon (EPSG:2157 shapely geometry), cached per bbox and day."""
+    key = "_".join(f"{v:.4f}" for v in bbox) + "_" + datetime.now(timezone.utc).strftime("%Y%m%d")
+    cache = CACHE / f"npad_polygons_{key}.json"
+    if cache.exists():
+        return {k: wkt.loads(v) for k, v in read_json(cache).items()}
+    polys = _fetch_polygons(bbox, years)
+    write_json(cache, {k: v.wkt for k, v in polys.items()})
+    return polys
+
+
+def _fetch_polygons(bbox, years: int) -> dict[str, object]:
     since = (datetime.now(timezone.utc) - timedelta(days=365 * years)).strftime("%Y-%m-%d 00:00:00")
     w, s, e, n = bbox
     params = {"where": f"ReceivedDate >= TIMESTAMP '{since}'", "geometry": f"{w},{s},{e},{n}",
@@ -83,6 +94,7 @@ def run(bbox) -> None:
     extracted = read_json(PIPE_INTERIM / "extracted.json", [])
     log(f"  {len(planning)} planning applications, {len(extracted)} LLM-kept new builds")
 
+    meta = {a["app_id"]: a for a in planning}
     devs = []
     excluded = 0
     for d in extracted:
@@ -92,7 +104,10 @@ def run(bbox) -> None:
             continue
         devs.append({"app_id": d["app_id"], "num_units": int(d["num_units"]), "dev_type": d["dev_type"],
                      "status": status, "received_date": d.get("received_date"),
-                     "description": d.get("description"), "lng": d["lon"], "lat": d["lat"]})
+                     "description": d.get("description"), "lng": d["lon"], "lat": d["lat"],
+                     "address": (meta.get(d["app_id"]) or d).get("address"),
+                     "authority": (meta.get(d["app_id"]) or d).get("authority"),
+                     "planning_url": (meta.get(d["app_id"]) or d).get("planning_url")})
     log(f"  {len(devs)} granted/pending developments ({excluded} excluded by STATUS_MAP)")
 
     try:

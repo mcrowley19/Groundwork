@@ -111,10 +111,41 @@ Beyond the four pipeline outputs above, the page looks for these in the data dir
 | `assumptions.json` | n/a | `[{key, label, value, unit, source_note}]`, shown in the Assumptions drawer and behind every `≈` marker |
 | `summary.json` | n/a | additionally `planned_units`, `residents`, `new_peak_pt_trips`, `proposed_routes`, `buses_required`, `new_primary_pupils`, `new_secondary_pupils`, `water_extension_km`, `water_cost_eur`, `by_status`, `sources{planning, network, osm_stops, osm_rail, osm_schools, mapillary}` |
 
-The pipeline does not produce the transport and schools files yet. `pipeline/mock_infra.py` writes a complete mock set to `data/mock/`:
+The real files come from the impact pipeline (next section) and land in `data/impact/`, which `server.py` prefers when it exists. `pipeline/mock_infra.py` writes an older, partly synthetic mock set to `data/mock/`:
 
 ```bash
 .venv/bin/python -m pipeline.mock_infra
 ```
 
-It takes the largest residential applications from `data/interim/planning.json` (unit counts parsed from the description text, so approximate), measures water distance against the real `data/network.geojson`, pulls bus stops, stations, rail lines and schools from the local OSM extract in `data/cache/osm/dublin.osm.pbf`, routes proposed bus services along `data/interim/graph.graphml`, and applies the assumptions listed in `assumptions.json`. Bus frequencies and school enrolments are synthetic. Footprints are rectangles sized from the unit count because NPAD has no site boundaries. The real `network.geojson` can be tens of MB at county scale, so the page only fetches it when the layer is switched on.
+It takes the largest residential applications from `data/interim/planning.json` (unit counts parsed from the description text, so approximate), measures water distance against the real `data/network.geojson`, pulls bus stops, stations, rail lines and schools from the local OSM extract in `data/cache/osm/dublin.osm.pbf`, routes proposed bus services along `data/interim/graph.graphml`, and applies the assumptions listed in `assumptions.json`. Bus frequencies and school enrolments are synthetic. Footprints are rectangles sized from the unit count. (The impact pipeline uses NPAD's real site boundaries from `FeatureServer/1` instead.) The real `network.geojson` can be tens of MB at county scale, so the page only fetches it when the layer is switched on.
+
+## Infrastructure Impact pipeline (`impact/`, outputs in `data/impact/`)
+
+This pipeline estimates the water, transport and schools infrastructure each granted or pending development will need. It reuses the water pipeline above (planning fetch, LLM extraction, inferred network, extension routing) and adds three new layers on top. Every estimated number comes from a named entry in `impact/config.py`, which is written out verbatim as `assumptions.json`. Values with no citation say `TODO: cite`.
+
+```bash
+.venv/bin/python run_impact.py mock                    # 0  hand-made mocks -> data/impact/mock/
+.venv/bin/python run_impact.py water --area dublin     # reuse: planning, LLM, context, network, extend
+.venv/bin/python run_impact.py footprints              # 1  NPAD site polygons + water results
+.venv/bin/python run_impact.py transport               # 2  GTFS access, demand, DBSCAN routes
+.venv/bin/python run_impact.py schools                 # 3  DoE schools, pupils, pressure
+.venv/bin/python run_impact.py scores                  # 4  scores, summary.json, assumptions.json, size check
+.venv/bin/python run_impact.py all --area dublin       # everything (water + 1–4)
+.venv/bin/python -m impact.validate data/impact        # check the outputs against the data contract
+
+.venv/bin/python server.py                             # serves data/impact/ (falls back to data/)
+MOCK=1 .venv/bin/python server.py                      # serves data/impact/mock/ at the same paths
+```
+
+The impact stages reuse the last bbox from `data/interim/run.json`, so pass `--area`/`--bbox` only to `water` or `all`.
+
+| Stage | Source | Notes |
+|---|---|---|
+| 1 Footprints | NPAD `FeatureServer/1` (site polygons, requested in EPSG:2157) | Joined to the LLM extraction by application ID. With no polygon, a `FOOTPRINT_SQUARE_M` square goes around the point (`footprint_source: "buffered_point"`). A multi-part site keeps its largest part (`footprint_parts` gives the count). Status: `STATUS_MAP` keeps granted, pending and appealed (as pending). `route_length_m` is the length of routed extension edges serving the site, or the direct lateral when routing added none. |
+| 2 Transport | NTA GTFS `GTFS_All.zip` (URL from data.gov.ie `nta-gtfs`) | AM-peak (07:00–10:00) departures on one weekday: the first Tuesday on or after both today and the feed start. A stop or station is frequent at ≥ `FREQ_THRESHOLD`/hr. Classes: served (frequent within 400 m), weak (any stop within 400 m), unserved. Routes: DBSCAN (600 m) over weak/unserved sites; clusters under `MIN_ROUTE_UNITS` get none. Each route is routed on the drive graph from the cluster centroid through every site to the nearest frequent stop or station. |
+| 3 Schools | DoE *Data on Individual Schools* 2025/26 (coordinates + enrolment) | Pupils = units × per-dwelling rates derived from the DoE 12% primary planning standard and the 8.34% post-primary share. A development's pressure ratio is its pupils ÷ the combined enrolment of nearby schools (2 km / 5 km), worst level. A school's ratio is the new pupils allocated to it ÷ its enrolment. This is a proxy, because capacity isn't published. |
+| 4 Scores | — | 0–100, higher = more need. Water: route length vs `WATER_SCORE_FULL_ROUTE_M`. Transport: distance to a frequent stop vs `TRANSPORT_SCORE_FULL_M`. Schools: worst ratio vs `SCHOOL_SCORE_FULL_RATIO`. Overall: `SCORE_WEIGHTS`. To keep under ~15 MB, `network.geojson` holds edges within `NETWORK_CONTEXT_M` of a development (all edges when there are none), with compacted evidence codes. |
+
+`summary.sources` reports `{status: ok|partial|failed, records}` for `planning_points`, `planning_polygons`, `llm_extraction`, `water_network`, `gtfs`, `schools_primary` and `schools_post_primary`. A failed source is logged and the run carries on with empty data for it.
+
+Developments also carry the fields the dashboard uses beyond the contract: `address`, `authority`, `planning_url`, `transport.nearest_stop_id`/`nearest_frequent_stop_id`, `schools.worst_pressure_ratio`, `water.avg_daily_demand_m3`/`required_main_mm`.
