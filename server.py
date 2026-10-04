@@ -9,6 +9,8 @@ GET  /data/<file>      public outputs only (never data/cache or data/interim); d
                        when the impact pipeline has run, else data/
 GET  /api/status       which files exist, per-source counts and errors, data directory
 POST /api/ask          {question, context?} -> {answer, highlight_app_ids, highlight_route_ids, engine}
+                       LLM_BACKEND=codex answers through `codex exec` (ChatGPT credits); otherwise the OpenAI
+                       API when OPENAI_API_KEY is set; otherwise, or on failure, a local rules engine.
 """
 from __future__ import annotations
 
@@ -16,6 +18,9 @@ import argparse
 import json
 import os
 import re
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -68,7 +73,7 @@ def status():
     sources = read_json(INTERIM / "sources.json", {}) if d == DATA.resolve() else {}
     summary = read_json(d / "summary.json", {}) or {}
     return {"data_dir": str(d), "mock": d.name == "mock", "files": files, "sources": sources,
-            "generated_at": summary.get("generated_at"), "llm_configured": bool(env("OPENAI_API_KEY"))}
+            "generated_at": summary.get("generated_at"), "llm_configured": _llm_engine() is not None}
 
 
 # --- analyst query -------------------------------------------------------------
@@ -84,7 +89,8 @@ def _local_answer(q: str, ctx: dict) -> tuple[str, list[str], list[str]]:
     devs: list[dict] = list(ctx.get("developments") or [])
     routes: list[dict] = list(ctx.get("routes") or [])
     scen = ctx.get("scenario") or {}
-    scen_txt = f"{scen.get('mode', 'projected')} scenario, pending approval rate {scen.get('pending_rate', 100)}%"
+    approved = scen.get("approved_app_ids") or []
+    scen_txt = f"{scen.get('mode', 'projected')} scenario, {len(approved)} pending application{'' if len(approved) == 1 else 's'} approved"
     if not devs:
         return "No developments are loaded, so there is nothing to query.", [], []
     fmt = lambda d: f"{d['app_id']} ({d['num_units']:,} units)"  # noqa: E731
@@ -145,30 +151,97 @@ def _local_answer(q: str, ctx: dict) -> tuple[str, list[str], list[str]]:
             "Try: 'top 5 critical', 'which sites need a bus route', 'water cost', 'school pressure', or an application id."), [], []
 
 
+ANSWER_SCHEMA = {"type": "object", "additionalProperties": False,
+                 "properties": {"answer": {"type": "string"},
+                                "highlight_app_ids": {"type": "array", "items": {"type": "string"}},
+                                "highlight_route_ids": {"type": "array", "items": {"type": "string"}}},
+                 "required": ["answer", "highlight_app_ids", "highlight_route_ids"]}
+ANALYST_SYSTEM = ("You are an analyst on an infrastructure impact desk for the Dublin region. Answer in at most three "
+                  "sentences of plain text (no Markdown) from the JSON supplied only, with readable numbers. Water network is INFERRED from public data; "
+                  "transport and school figures are prototype estimates. `totals` covers every development in the "
+                  "scenario; `developments` is only the highest-pressure and largest ones plus any named in the question. "
+                  "Put the ids of the developments and proposed routes your answer is about in the highlight fields; don't "
+                  "list them again at the end of the answer.")
+CODEX_ANSWER_TIMEOUT_S = 120
+
+
+def _llm_engine() -> str | None:
+    """Which LLM answers the analyst: "codex" (LLM_BACKEND=codex and the CLI is installed), "openai", or None."""
+    if (env("LLM_BACKEND") or "").lower() == "codex":
+        return "codex" if shutil.which("codex") else None
+    return "openai" if env("OPENAI_API_KEY") else None
+
+
+def _compact(q: str, ctx: dict, top: int = 40, largest: int = 15) -> dict:
+    """The page sends every development (~1.2k rows, ~200k tokens): too big for a prompt. Keep scenario totals,
+    the top rows by overall score and by size, any id named in the question, and all routes."""
+    devs = ctx.get("developments") or []
+    if len(devs) <= top + largest:
+        return ctx
+    active = [d for d in devs if d.get("weight", 1) > 0]
+    pick = {d["app_id"]: d for d in sorted(active, key=lambda d: -(d.get("overall") or 0))[:top]}
+    pick.update({d["app_id"]: d for d in sorted(active, key=lambda d: -(d.get("num_units") or 0))[:largest]})
+    ql = q.lower()
+    pick.update({d["app_id"]: d for d in devs if str(d["app_id"]).lower() in ql})
+    status = lambda s: sum(1 for d in active if d.get("overall_status") == s)  # noqa: E731
+    totals = {"developments": len(active), "units": sum(d.get("num_units") or 0 for d in active),
+              "pending": sum(1 for d in active if d.get("status") == "pending"),
+              "critical": status("critical"), "watch": status("watch"), "nominal": status("nominal"),
+              "unconnected_to_water": sum(1 for d in active if d.get("water_connected") is False),
+              "water_cost_eur": round(sum(d.get("water_cost") or 0 for d in active)),
+              "peak_pt_trips": round(sum(d.get("peak_pt_trips") or 0 for d in active)),
+              "primary_pupils": round(sum(d.get("primary_pupils") or 0 for d in active)),
+              "secondary_pupils": round(sum(d.get("secondary_pupils") or 0 for d in active))}
+    return {**ctx, "totals": totals, "developments": list(pick.values())}
+
+
+def _filter_ids(out: dict, ctx: dict) -> tuple[str, list[str], list[str]]:
+    apps = {d["app_id"] for d in ctx.get("developments") or []}
+    routes = {r["route_id"] for r in ctx.get("routes") or []}
+    return out["answer"], [i for i in out["highlight_app_ids"] if i in apps], [i for i in out["highlight_route_ids"] if i in routes]
+
+
 def _llm_answer(q: str, ctx: dict) -> tuple[str, list[str], list[str]]:
     from openai import OpenAI
 
     client = OpenAI(api_key=env("OPENAI_API_KEY"), max_retries=2)
     model = env("OPENAI_MODEL") or "gpt-4o-mini"
-    schema = {"name": "analyst_answer", "strict": True,
-              "schema": {"type": "object", "additionalProperties": False,
-                         "properties": {"answer": {"type": "string"},
-                                        "highlight_app_ids": {"type": "array", "items": {"type": "string"}},
-                                        "highlight_route_ids": {"type": "array", "items": {"type": "string"}}},
-                         "required": ["answer", "highlight_app_ids", "highlight_route_ids"]}}
-    system = ("You are an analyst on an infrastructure impact desk for the Dublin region. Answer in at most three "
-              "sentences from the JSON supplied only, with readable numbers. Water network is INFERRED from public data; "
-              "transport and school figures are prototype estimates. Return the ids of the developments and proposed "
-              "routes your answer is about.")
     resp = client.chat.completions.create(
         model=model, temperature=0,
-        messages=[{"role": "system", "content": system},
-                  {"role": "user", "content": json.dumps({"question": q, **ctx}, ensure_ascii=False)}],
-        response_format={"type": "json_schema", "json_schema": schema})
-    out = json.loads(resp.choices[0].message.content)
-    apps = {d["app_id"] for d in ctx.get("developments") or []}
-    routes = {r["route_id"] for r in ctx.get("routes") or []}
-    return out["answer"], [i for i in out["highlight_app_ids"] if i in apps], [i for i in out["highlight_route_ids"] if i in routes]
+        messages=[{"role": "system", "content": ANALYST_SYSTEM},
+                  {"role": "user", "content": json.dumps({"question": q, **_compact(q, ctx)}, ensure_ascii=False)}],
+        response_format={"type": "json_schema", "json_schema": {"name": "analyst_answer", "strict": True, "schema": ANSWER_SCHEMA}})
+    return _filter_ids(json.loads(resp.choices[0].message.content), ctx)
+
+
+class CodexError(RuntimeError):
+    pass
+
+
+def _codex_answer(q: str, ctx: dict) -> tuple[str, list[str], list[str]]:
+    """Same answer through `codex exec --output-schema`, billed to the ChatGPT account `codex login` uses."""
+    prompt = (ANALYST_SYSTEM + "\n\nDo not run commands or read files; answer from the JSON below.\n\n"
+              + json.dumps({"question": q, **_compact(q, ctx)}, ensure_ascii=False))
+    with tempfile.TemporaryDirectory() as tmp:
+        (Path(tmp) / "schema.json").write_text(json.dumps(ANSWER_SCHEMA))
+        cmd = ["codex", "exec", "--skip-git-repo-check", "--ephemeral", "--ignore-user-config",
+               "--ignore-rules", "-s", "read-only", "-C", tmp, "-c", 'model_reasoning_effort="low"',
+               "--output-schema", "schema.json", "-o", "out.json", "-"]
+        if env("CODEX_MODEL"):
+            cmd[2:2] = ["-m", env("CODEX_MODEL")]
+        try:
+            proc = subprocess.run(cmd, input=prompt, capture_output=True, text=True, cwd=tmp,
+                                  timeout=CODEX_ANSWER_TIMEOUT_S)
+        except subprocess.TimeoutExpired:
+            raise CodexError(f"codex timed out after {CODEX_ANSWER_TIMEOUT_S}s") from None
+        out = Path(tmp) / "out.json"
+        if proc.returncode != 0 or not out.exists():
+            tail = (proc.stderr or proc.stdout).strip().splitlines()[-1:]
+            msg = tail[0] if tail else f"exit {proc.returncode}"
+            if "sign in again" in msg or "401 Unauthorized" in msg or "Not logged in" in msg:
+                msg = "codex not signed in; run `codex login`"
+            raise CodexError(msg[:160])
+        return _filter_ids(json.loads(out.read_text()), ctx)
 
 
 def _server_context(top_n: int = 30) -> dict:
@@ -183,21 +256,31 @@ def _server_context(top_n: int = 30) -> dict:
             "routes": [f["properties"] for f in routes]}
 
 
+def _short_error(exc: Exception) -> str:
+    """One-line reason for the query log, not the provider's whole JSON body."""
+    if isinstance(exc, CodexError):
+        return str(exc)
+    status, code = getattr(exc, "status_code", None), getattr(exc, "code", None)
+    return " ".join(str(x) for x in (status, code) if x) or type(exc).__name__
+
+
 @app.post("/api/ask")
 def ask(body: Ask):
     q = body.question.strip()
     if not q:
         raise HTTPException(400, "question is empty")
     ctx = body.context or {}
-    if env("OPENAI_API_KEY"):
+    engine = _llm_engine()
+    if engine:
         try:
-            answer, apps, routes = _llm_answer(q, ctx if ctx.get("developments") else _server_context())
-            return {"answer": answer, "highlight_app_ids": apps, "highlight_route_ids": routes,
-                    "engine": env("OPENAI_MODEL") or "gpt-4o-mini"}
+            answer_with = _codex_answer if engine == "codex" else _llm_answer
+            answer, apps, routes = answer_with(q, ctx if ctx.get("developments") else _server_context())
+            name = f"codex:{env('CODEX_MODEL') or 'default'}" if engine == "codex" else env("OPENAI_MODEL") or "gpt-4o-mini"
+            return {"answer": answer, "highlight_app_ids": apps, "highlight_route_ids": routes, "engine": name}
         except Exception as exc:  # fall back rather than fail the desk
             answer, apps, routes = _local_answer(q, ctx)
             return {"answer": answer, "highlight_app_ids": apps, "highlight_route_ids": routes, "engine": "local",
-                    "warning": f"LLM call failed: {exc}"}
+                    "warning": f"LLM unavailable ({_short_error(exc)}); answered by the local rules engine."}
     answer, apps, routes = _local_answer(q, ctx)
     return {"answer": answer, "highlight_app_ids": apps, "highlight_route_ids": routes, "engine": "local"}
 

@@ -18,7 +18,7 @@ All coordinates are EPSG:4326.
 
 ```bash
 uv venv -p 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
-cp .env.example .env   # add OPENAI_API_KEY; MAPILLARY_TOKEN is optional
+cp .env.example .env   # add OPENAI_API_KEY, or set LLM_BACKEND=codex; MAPILLARY_TOKEN is optional
 ```
 
 ## Run
@@ -27,7 +27,7 @@ cp .env.example .env   # add OPENAI_API_KEY; MAPILLARY_TOKEN is optional
 
 ```bash
 .venv/bin/python run.py planning --bbox=-6.2560,53.3460,-6.2440,53.3500   # 1 planning applications
-.venv/bin/python run.py llm        # 2 OpenAI extraction (cached in data/cache/llm.json)
+.venv/bin/python run.py llm        # 2 LLM extraction (cached in data/cache/llm.json)
 .venv/bin/python run.py context    # 2b Census 2022 small areas + Uisce Éireann registers
 .venv/bin/python run.py network    # 3 street graph + hydrant/manhole/building evidence
 .venv/bin/python run.py extend     # 4 connected? + Steiner-tree extensions
@@ -41,14 +41,14 @@ cp .env.example .env   # add OPENAI_API_KEY; MAPILLARY_TOKEN is optional
 
 OpenStreetMap is read from a local Geofabrik extract, not Overpass. The first run downloads `ireland-and-northern-ireland-latest.osm.pbf` (~400 MB) to `data/cache/osm/` and cuts a County Dublin extract from it (~3 min, once). Delete both files to refresh OSM. A county run needs about 5 GB of RAM. To use live Overpass instead, set `OSM_SOURCE=overpass` (optionally with `OVERPASS_URL`); the public servers were failing (406s and timeouts) on 2026-10-04.
 
-Stage 2 makes one OpenAI call per uncached application, about 25k for County Dublin over 3 years. `LLM_WORKERS` (default 16) sets the concurrency.
+Stage 2 only sends applications whose description could describe new homes (a unit count, a plural like "apartments", a single new dwelling, or a scheme type like LRD/SHD). For County Dublin over 3 years that's about 3k of 25k. With `LLM_BACKEND=openai` (the default) it makes one call per application, `LLM_WORKERS` (default 16) at a time. With `LLM_BACKEND=codex` it sends batches of `CODEX_BATCH` (default 25) through `codex exec`, `CODEX_WORKERS` (default 4) at a time, billed to the ChatGPT account `codex login` is signed in with.
 
 Use `--bbox=` with an `=` sign. Otherwise argparse reads the leading `-` of a western longitude as a flag.
 
 ## How it works
 
 1. **Planning**: queries the NPAD FeatureServer with a server-side envelope filter on the bbox plus `ReceivedDate` in the last 3 years, paging 1000 rows at a time. Point geometry is requested in EPSG:2157 and reprojected to 4326. The `ITMEasting/ITMNorthing` columns are null for Dublin City rows, so they're only a fallback. `app_id` = authority initials + application number, e.g. `DCC-3031/24`.
-2. **LLM**: 8 concurrent `chat.completions` calls with a strict JSON schema. `OPENAI_MODEL` defaults to `gpt-4o-mini`. Results are cached per `app_id`; failed calls aren't cached, so the next run retries them. Keeps `dev_type ∈ {residential, mixed}`, `is_new_build`, `num_units > 0`.
+2. **LLM**: a regex pre-filter (`is_candidate`) drops descriptions that can't add homes. The rest go to OpenAI `chat.completions` (`OPENAI_MODEL`, default `gpt-4o-mini`) or `codex exec --output-schema`, both with the same strict JSON schema. Results are cached per `app_id`; failed calls aren't cached, so the next run retries them. Keeps `dev_type ∈ {residential, mixed}`, `is_new_build`, `num_units > 0`.
 3. **Network**: osmnx `drive` graph for the bbox padded by 250 m, made undirected. Point evidence snaps to the nearest edge within 30 m. Mapped pipelines credit edges that run within 15 m of them for at least half their length. DCC gully records credit streets by name inside the DCC boundary. An edge's confidence is the best evidence it has, otherwise none (levels are listed below). Also writes `assets.geojson`.
 4. **Extend**: a development is connected if it's within 50 m of a served (non-`none`) edge. For the rest, every served node is joined to one virtual source at zero cost. Then `steiner_tree(method="mehlhorn")` runs over the source plus each development's nearest node, weighted by length. Edges are ordered by BFS depth from the source (0 = touching the existing network). `serves_app_ids` lists the developments whose tree path uses that edge.
 5. **Summary**: groups developments by the nearest OSM `place=suburb|neighbourhood|quarter`, searched within 2 km of the bbox. Each extension edge's length is split evenly across the developments it serves.
@@ -93,7 +93,7 @@ MOCK=1 .venv/bin/python server.py          # the mock dataset in data/mock/
 .venv/bin/python server.py --data some/dir --port 8080
 ```
 
-Routes: `GET /` (the page), `GET /data/<file>` (public outputs only), `GET /api/status` (which files exist, source errors), `POST /api/ask {question, context}` → `{answer, highlight_app_ids, highlight_route_ids, engine}`. The analyst query uses OpenAI when `OPENAI_API_KEY` is set and otherwise a local rules engine over the table the page sends with the question, so it works offline.
+Routes: `GET /` (the page), `GET /data/<file>` (public outputs only), `GET /api/status` (which files exist, source errors), `POST /api/ask {question, context}` → `{answer, highlight_app_ids, highlight_route_ids, engine}`. The analyst query follows `LLM_BACKEND` like stage 2: `codex` answers through `codex exec` (ChatGPT credits, ~10–20 s per question), otherwise OpenAI is used when `OPENAI_API_KEY` is set. The LLM sees scenario totals, the 40 highest-pressure and 15 largest developments, any id named in the question, and every proposed route. With no LLM, or if the call fails, a local rules engine answers over the full table the page sends, so it works offline.
 
 The page shows every development's **water**, **transport** and **schools** impact, with a scenario slider (pending approval rate, baseline/projected) recomputed client-side. Keyboard: `1–4` system, `/` query, `Esc` clear, `R` reset camera, arrows move through the table.
 

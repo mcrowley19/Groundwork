@@ -15,7 +15,7 @@ There are no real Uisce Éireann pipe records. The network is inferred from publ
   - `stage4_extend.py`: works out which developments are connected (within 50 m of a served edge). For the rest, a Steiner tree over a virtual source routes the extension pipes.
   - `stage5_summary.py`: writes `summary.json` with headline numbers and top areas by suburb, and writes the mocks if they're missing.
 - `data/`: pipeline outputs, which are the contract with the frontend. `data/cache/` and `data/interim/` are gitignored.
-- `server.py`: FastAPI server for the dashboard. Serves `frontend/index.html`, the public files in the data directory (`MOCK=1` switches to `data/mock/`), `/api/status` and `POST /api/ask` (OpenAI when `OPENAI_API_KEY` is set, otherwise a local rules engine).
+- `server.py`: FastAPI server for the dashboard. Serves `frontend/index.html`, the public files in the data directory (`MOCK=1` switches to `data/mock/`), `/api/status` and `POST /api/ask` (`codex exec` when `LLM_BACKEND=codex`, else OpenAI when `OPENAI_API_KEY` is set, else a local rules engine; the LLM gets a compacted context, not all ~1.2k rows).
 - `frontend/index.html`: the Infrastructure Impact Monitor, one file with inline CSS/JS, libraries from pinned CDNs, no build step. Water, transport and schools impact per development; scenario recompute is client-side.
 - `pipeline/mock_infra.py`: writes the full mock dataset (developments with water/transport/schools, stops, rail, routes, schools, assumptions) to `data/mock/` from the planning register, the local OSM extract and the real inferred network. The pipeline itself does not produce transport or schools data yet.
 

@@ -1,21 +1,21 @@
 {
-  "planned_units": 0,
-  "residents": 0,
-  "new_peak_pt_trips": 0,
-  "proposed_routes": 0,
-  "buses_required": 0,
-  "new_primary_pupils": 0,
-  "new_secondary_pupils": 0,
-  "water_extension_km": 0.0,
-  "water_cost_eur": 0,
+  "planned_units": 37718,
+  "residents": 103921,
+  "new_peak_pt_trips": 4272.3,
+  "proposed_routes": 16,
+  "buses_required": 55,
+  "new_primary_pupils": 12437.9,
+  "new_secondary_pupils": 8628.3,
+  "water_extension_km": 0.819,
+  "water_cost_eur": 9582100,
   "by_status": {
     "granted": {
-      "developments": 0,
-      "units": 0
+      "developments": 997,
+      "units": 30348
     },
     "pending": {
-      "developments": 0,
-      "units": 0
+      "developments": 212,
+      "units": 7370
     }
   },
   "sources": {
@@ -28,12 +28,12 @@
       "records": 25388
     },
     "llm_extraction": {
-      "status": "failed",
-      "records": 0
+      "status": "partial",
+      "records": 3020
     },
     "water_network": {
       "status": "ok",
-      "records": 0
+      "records": 1209
     },
     "gtfs": {
       "status": "ok",
@@ -48,5 +48,5 @@
       "records": 721
     }
   },
-  "generated_at": "2026-10-04T12:46:08+00:00"
+  "generated_at": "2026-10-04T13:33:14+00:00"
 }

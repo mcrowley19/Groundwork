@@ -19,6 +19,7 @@ from shapely.ops import unary_union
 from pipeline.common import log
 from pipeline.stage1_planning import URL as POINTS_URL
 from pipeline.stage1_planning import app_id
+from pipeline.stage2_llm import is_candidate
 
 from . import config as C
 from .common import CACHE, DEVS, METRIC_CRS, PIPE_INTERIM, WATER_DIR, WGS84, read_json, source, write_json
@@ -142,9 +143,10 @@ def run(bbox) -> None:
     p_src = (read_json(PIPE_INTERIM / "sources.json", {}) or {}).get("planning") or {}
     source("planning_points", "failed" if p_src.get("error") else "ok", len(planning), p_src.get("error"))
     llm_cache = read_json(PIPE_INTERIM.parent / "cache" / "llm.json", {}) or {}
-    have = sum(1 for a in planning if a["app_id"] in llm_cache)
-    status = "ok" if have == len(planning) else ("failed" if have == 0 and planning else "partial")
-    source("llm_extraction", status, have, None if status == "ok" else f"{len(planning) - have} applications not extracted")
+    candidates = [a for a in planning if is_candidate(a.get("description"))]
+    have = sum(1 for a in candidates if a["app_id"] in llm_cache)
+    status = "ok" if have == len(candidates) else ("failed" if have == 0 and candidates else "partial")
+    source("llm_extraction", status, have, None if status == "ok" else f"{len(candidates) - have} applications not extracted")
     unmatched = sum(1 for d in devs if d["water"]["connected"] is None)
     source("water_network", "partial" if unmatched else "ok", len(devs) - unmatched,
            f"{unmatched} developments missing from the water routing outputs" if unmatched else None)
